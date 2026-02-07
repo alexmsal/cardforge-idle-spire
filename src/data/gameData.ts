@@ -1,4 +1,4 @@
-import type { Card, EnemyDef, AIRule } from '../models';
+import type { Card, EnemyDef, AIRule, GameEvent, Rarity } from '../models';
 
 import cardsData from '../data/cards.json';
 import enemiesData from '../data/enemies.json';
@@ -25,6 +25,18 @@ export const DECK_MIN = 12;
 export const DECK_MAX = 30;
 export const MAX_AI_RULES = 10;
 
+// ─── Dungeon data ────────────────────────────────────────
+
+export const dungeonConfig = cfg.dungeonMap.crypt;
+export const economyConfig = cfg.gameConfig.economy;
+export const shopConfig = cfg.shop;
+export const restSiteConfig = cfg.restSite;
+export const chestRewardsConfig = cfg.chestRewards;
+export const gameEvents: GameEvent[] = cfg.events;
+export const STARTING_HP = cfg.gameConfig.combat.startingHp as number;
+
+// ─── Helpers ─────────────────────────────────────────────
+
 export function buildDeckFromTemplate(template: StarterDeckTemplate): Card[] {
   const deck: Card[] = [];
   for (const entry of template.cards) {
@@ -40,4 +52,23 @@ export function buildDeckFromTemplate(template: StarterDeckTemplate): Card[] {
 
 export function getCardById(id: string): Card | undefined {
   return allCards.find((c) => c.id === id);
+}
+
+export function getEnemyById(id: string): EnemyDef | undefined {
+  return allEnemies.find((e) => e.id === id);
+}
+
+export function getCardsByRarity(rarity: Rarity): Card[] {
+  return allCards.filter((c) => c.rarity === rarity);
+}
+
+export function getRandomCard(rarity?: string): Card {
+  const pool = rarity ? allCards.filter((c) => c.rarity === rarity) : allCards;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+export function getRandomCardChoices(count: number, rarity?: string): Card[] {
+  const pool = rarity ? allCards.filter((c) => c.rarity === rarity) : allCards;
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
 }

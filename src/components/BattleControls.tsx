@@ -9,6 +9,7 @@ interface BattleControlsProps {
   onStep: () => void;
   onChangeSpeed: (speed: BattleSpeed) => void;
   onReset: () => void;
+  hideReset?: boolean;
 }
 
 const SPEEDS: BattleSpeed[] = [1, 2, 4, 100];
@@ -28,6 +29,7 @@ export function BattleControls({
   onStep,
   onChangeSpeed,
   onReset,
+  hideReset,
 }: BattleControlsProps) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
@@ -67,7 +69,7 @@ export function BattleControls({
         </div>
       )}
 
-      {simState === 'finished' && (
+      {simState === 'finished' && !hideReset && (
         <button
           onClick={onReset}
           className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-blue-600/20"
@@ -97,7 +99,7 @@ export function BattleControls({
       )}
 
       {/* Reset (always visible when not idle) */}
-      {simState !== 'idle' && simState !== 'finished' && (
+      {simState !== 'idle' && simState !== 'finished' && !hideReset && (
         <button
           onClick={onReset}
           className="px-3 py-1 text-xs text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded transition-colors ml-auto"

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 
 const links = [
+  { to: '/dungeon', label: 'Dungeon', icon: '\uD83C\uDFF0' },
   { to: '/battle', label: 'Battle', icon: '\u2694\uFE0F' },
   { to: '/deck', label: 'Deck', icon: '\uD83C\uDCCF' },
   { to: '/ai', label: 'AI Rules', icon: '\uD83E\uDDE0' },
