@@ -1,0 +1,372 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "contents": ["events", "shop", "starterDecks", "restSite", "chestRewards"]
+  },
+
+  "events": [
+    {
+      "id": "forgotten_altar",
+      "name": "Forgotten Altar",
+      "description": "A crumbling stone altar radiates faint warmth. Ancient runes pulse with dying light. An offering might awaken its power.",
+      "choices": [
+        {
+          "label": "Offer blood",
+          "description": "Sacrifice 15% of current HP",
+          "cost": { "type": "hp_percent", "value": 15 },
+          "reward": { "type": "card_choice", "count": 3, "rarityBoost": 0.2 },
+          "resultText": "Blood seeps into the stone. The altar cracks open, revealing crystallized cards."
+        },
+        {
+          "label": "Offer gold",
+          "description": "Pay 75 gold",
+          "cost": { "type": "gold", "value": 75 },
+          "reward": { "type": "heal", "value": 25 },
+          "resultText": "Coins dissolve into golden mist. Warmth floods your construct, mending damage."
+        },
+        {
+          "label": "Leave",
+          "description": "The altar feels unstable. Better not risk it.",
+          "cost": null,
+          "reward": null,
+          "resultText": "You leave the altar undisturbed."
+        }
+      ]
+    },
+    {
+      "id": "wandering_merchant",
+      "name": "Wandering Merchant",
+      "description": "A cloaked figure sits beside a tattered rug spread with curious wares. 'Ah, a Cardforge! I have just what you need...'",
+      "choices": [
+        {
+          "label": "Buy a random rare card",
+          "description": "150 gold",
+          "cost": { "type": "gold", "value": 150 },
+          "reward": { "type": "card_random", "rarity": "rare", "count": 1 },
+          "resultText": "The merchant slides a gleaming card across the rug. 'Handle with care.'"
+        },
+        {
+          "label": "Buy a card removal",
+          "description": "Remove any card from your deck for 50 gold",
+          "cost": { "type": "gold", "value": 50 },
+          "reward": { "type": "card_remove", "count": 1 },
+          "resultText": "The merchant takes your unwanted card and snaps it in half. 'Won't be needing that.'"
+        },
+        {
+          "label": "Haggle",
+          "description": "50% chance: get a free uncommon card. 50% chance: lose 30 gold.",
+          "cost": null,
+          "reward": { "type": "gamble", "success": { "type": "card_random", "rarity": "uncommon" }, "failure": { "type": "gold_loss", "value": 30 }, "chance": 0.5 },
+          "resultText_success": "The merchant laughs. 'You drive a hard bargain. Fine — take it.'",
+          "resultText_failure": "The merchant scowls. 'Insult my prices? That'll cost you.'"
+        }
+      ]
+    },
+    {
+      "id": "cursed_chest",
+      "name": "Cursed Chest",
+      "description": "A locked chest emanates dark energy. Whatever is inside is powerful — but the curse on the lock is real.",
+      "choices": [
+        {
+          "label": "Force it open",
+          "description": "Get a rare card, but take 20 damage",
+          "cost": { "type": "hp_flat", "value": 20 },
+          "reward": { "type": "card_choice", "count": 1, "rarityGuaranteed": "rare" },
+          "resultText": "The curse lashes out as the chest opens. Inside: a card of remarkable power."
+        },
+        {
+          "label": "Carefully disarm",
+          "description": "Get an uncommon card safely, but it takes time (+1 to next floor's enemy count)",
+          "cost": { "type": "next_floor_harder", "value": 1 },
+          "reward": { "type": "card_choice", "count": 2, "rarityGuaranteed": "uncommon" },
+          "resultText": "You spend precious minutes disarming the curse. The chest yields its treasure — but you hear shuffling in the dark."
+        },
+        {
+          "label": "Leave",
+          "description": "Not worth the risk.",
+          "cost": null,
+          "reward": null,
+          "resultText": "You back away slowly. Some doors are better left unopened."
+        }
+      ]
+    },
+    {
+      "id": "training_dummy",
+      "name": "Training Dummy",
+      "description": "An enchanted straw dummy stands in an alcove, marked with targeting circles. Beside it: a set of smithing tools.",
+      "choices": [
+        {
+          "label": "Upgrade a card",
+          "description": "Enhance one card by +1 level (free)",
+          "cost": null,
+          "reward": { "type": "card_upgrade", "count": 1 },
+          "resultText": "You practice your card's technique against the dummy until it feels sharper, stronger."
+        },
+        {
+          "label": "Practice combat",
+          "description": "Fight a weakened enemy for 40 gold",
+          "cost": null,
+          "reward": { "type": "fight_weak", "goldReward": 40 },
+          "resultText": "The dummy animates! A brief, easy fight leaves you richer and wiser."
+        }
+      ]
+    },
+    {
+      "id": "mysterious_pool",
+      "name": "Mysterious Pool",
+      "description": "A still pool of luminescent liquid. Reflections move independently of reality. You see your cards shimmer in the depths.",
+      "choices": [
+        {
+          "label": "Drink from the pool",
+          "description": "Random effect: heal 30 HP OR lose 10 HP OR gain 50 gold",
+          "cost": null,
+          "reward": { "type": "random_pool", "outcomes": [
+            { "type": "heal", "value": 30, "weight": 40, "text": "Warmth floods through you. +30 HP." },
+            { "type": "hp_flat_loss", "value": 10, "weight": 30, "text": "The liquid burns! -10 HP." },
+            { "type": "gold", "value": 50, "weight": 30, "text": "Gold coins materialize in your hands. +50 gold." }
+          ]},
+          "resultText": "You cup the shimmering liquid and drink..."
+        },
+        {
+          "label": "Dip a card",
+          "description": "Transform a card into a random card of the same rarity",
+          "cost": { "type": "card_sacrifice", "count": 1 },
+          "reward": { "type": "card_transform", "sameRarity": true },
+          "resultText": "The card dissolves and reforms into something entirely different."
+        },
+        {
+          "label": "Leave",
+          "description": "You don't trust it.",
+          "cost": null,
+          "reward": null,
+          "resultText": "Wise. The pool ripples as if annoyed."
+        }
+      ]
+    }
+  ],
+
+  "shop": {
+    "config": {
+      "cardSlots": 3,
+      "removeSlot": true,
+      "refreshable": false,
+      "pricing": {
+        "common": 50,
+        "uncommon": 100,
+        "rare": 200,
+        "cardRemoval": 75,
+        "healPotion": 50,
+        "healAmount": 20
+      },
+      "rarityWeights": {
+        "common": 50,
+        "uncommon": 35,
+        "rare": 15
+      }
+    },
+    "additionalItems": [
+      {
+        "id": "healing_flask",
+        "name": "Healing Flask",
+        "description": "Restore 20 HP immediately",
+        "price": 50,
+        "effect": { "type": "heal", "value": 20 },
+        "stock": 1
+      }
+    ]
+  },
+
+  "restSite": {
+    "options": [
+      {
+        "id": "rest",
+        "label": "Rest",
+        "description": "Heal 30% of max HP",
+        "effect": { "type": "heal_percent", "value": 30 }
+      },
+      {
+        "id": "smith",
+        "label": "Smith",
+        "description": "Upgrade one card by +1 level",
+        "effect": { "type": "card_upgrade", "count": 1 }
+      }
+    ]
+  },
+
+  "chestRewards": {
+    "small": {
+      "gold": { "min": 20, "max": 40 },
+      "cardChance": 0.5,
+      "cardRarityWeights": { "common": 70, "uncommon": 30 }
+    },
+    "large": {
+      "gold": { "min": 50, "max": 80 },
+      "cardChance": 1.0,
+      "cardRarityWeights": { "common": 40, "uncommon": 45, "rare": 15 }
+    }
+  },
+
+  "starterDecks": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "A balanced starter deck. Simple but reliable.",
+      "cards": [
+        { "id": "strike", "count": 4 },
+        { "id": "defend", "count": 4 },
+        { "id": "bash", "count": 1 },
+        { "id": "healing_potion", "count": 1 },
+        { "id": "quick_slash", "count": 2 },
+        { "id": "shield_bash", "count": 1 },
+        { "id": "iron_wave", "count": 1 },
+        { "id": "bandage", "count": 1 }
+      ],
+      "totalCards": 15,
+      "aiRules": [
+        {
+          "priority": 1,
+          "condition": { "parameter": "hp_percent", "operator": "<", "value": 30 },
+          "cardId": "healing_potion",
+          "target": "self",
+          "description": "IF HP < 30% → Play Healing Potion"
+        },
+        {
+          "priority": 2,
+          "condition": { "parameter": "block", "operator": "=", "value": 0 },
+          "cardId": "defend",
+          "target": "self",
+          "description": "IF Block = 0 → Play Defend"
+        },
+        {
+          "priority": 3,
+          "condition": { "parameter": "always" },
+          "cardId": "strike",
+          "target": "nearest",
+          "description": "ALWAYS → Play Strike on nearest enemy"
+        }
+      ]
+    }
+  ],
+
+  "dungeonMap": {
+    "crypt": {
+      "floors": 10,
+      "nodesPerFloor": 3,
+      "nodeTypeWeights": {
+        "battle": 45,
+        "elite": 0,
+        "event": 15,
+        "shop": 10,
+        "chest": 15,
+        "rest": 15
+      },
+      "overrides": {
+        "floor1": { "forced": "battle" },
+        "floor3": { "elite_chance": 0.5 },
+        "floor5": { "forced_one": "shop" },
+        "floor6": { "elite_chance": 0.5 },
+        "floor7": { "forced_one": "rest" },
+        "floor9": { "elite_chance": 0.75 },
+        "floor10": { "forced": "boss" }
+      },
+      "encounterWeightsByFloor": {
+        "1-3": { "skeleton": 40, "zombie": 30, "bone_archer": 20, "crypt_rat": 10 },
+        "4-6": { "skeleton": 15, "zombie": 20, "ghost": 25, "bone_archer": 20, "crypt_rat": 10, "necro_acolyte": 10 },
+        "7-9": { "ghost": 25, "bone_archer": 15, "crypt_rat": 20, "necro_acolyte": 25, "zombie": 15 }
+      },
+      "multiEnemyChance": {
+        "1-3": 0.2,
+        "4-6": 0.4,
+        "7-9": 0.6
+      },
+      "multiEnemyCount": { "min": 2, "max": 3 }
+    }
+  },
+
+  "gameConfig": {
+    "combat": {
+      "startingHp": 80,
+      "startingEnergy": 3,
+      "handSize": 5,
+      "maxHandSize": 10,
+      "deckMin": 12,
+      "deckMax": 30,
+      "maxAiRules": 10,
+      "turnLimit": 50,
+      "blockDecay": true,
+      "poisonTicksBeforeAction": true,
+      "statusDuration": {
+        "weakness": "decrements by 1 at end of target's turn",
+        "vulnerability": "decrements by 1 at end of target's turn",
+        "poison": "ticks damage at start of turn, then decrements by 1",
+        "thorn": "permanent unless noted 'turn' duration",
+        "str": "permanent unless noted 'turn' duration",
+        "dex": "permanent unless noted 'turn' duration"
+      }
+    },
+    "economy": {
+      "battleGoldBase": { "min": 10, "max": 20 },
+      "battleGoldFloorMultiplier": 1.15,
+      "cardDropChance": 0.6,
+      "cardDropRarityWeights": { "common": 60, "uncommon": 25, "rare": 10, "none": 5 },
+      "eliteGoldMultiplier": 2.5,
+      "bossGoldMultiplier": 5.0
+    },
+    "crafting": {
+      "enhanceCost": "1 duplicate card → +1 level (max +3, each = +30% stats)",
+      "transmuteCost": "3 same-rarity cards → 1 card of next rarity",
+      "dismantleYield": {
+        "common": 10,
+        "uncommon": 25,
+        "rare": 40
+      },
+      "craftCost": {
+        "common": 40,
+        "uncommon": 100,
+        "rare": 160
+      }
+    },
+    "prestige": {
+      "foilFormula": "floor(max_floor^1.5 × (1 + boss_count × 0.3))",
+      "reset": ["cards", "gold", "shards", "stationLevels", "dungeonProgress"],
+      "keep": ["foil", "eternalCards", "blueprints", "aiConditionsUnlocked", "achievements"],
+      "eternalCardSlots": 1,
+      "foilUpgrades": [
+        { "id": "hp_boost", "name": "+5 Starting HP", "cost": 20, "effect": { "type": "max_hp", "value": 5 }, "maxStacks": 10 },
+        { "id": "gold_boost", "name": "+1 Gold per battle", "cost": 15, "effect": { "type": "gold_per_battle", "value": 1 }, "maxStacks": 10 },
+        { "id": "start_card", "name": "+1 Starting hand size", "cost": 50, "effect": { "type": "hand_size", "value": 1 }, "maxStacks": 2 },
+        { "id": "eternal_slot", "name": "+1 Eternal card slot", "cost": 150, "effect": { "type": "eternal_slots", "value": 1 }, "maxStacks": 2 }
+      ]
+    },
+    "idle": {
+      "maxOfflineHours": 24,
+      "offlineRewardMultiplier": 0.7,
+      "generatorDegradationPerDay": 0.10,
+      "battleDurationSeconds": 30,
+      "speedMultipliers": [1, 2, 4, 100]
+    },
+    "stations": {
+      "anvil": {
+        "name": "Anvil",
+        "baseCost": 500,
+        "costExponent": 1.8,
+        "maxLevel": 10,
+        "perLevel": "Unlocks crafting recipes and reduces shard costs"
+      },
+      "library": {
+        "name": "Library",
+        "baseCost": 500,
+        "costExponent": 1.8,
+        "maxLevel": 10,
+        "perLevel": "Increases deck max size by 2 (12 → 30)"
+      },
+      "portal": {
+        "name": "Portal",
+        "baseCost": 500,
+        "costExponent": 1.8,
+        "maxLevel": 5,
+        "perLevel": "Unlocks speed multipliers and dungeon selection"
+      }
+    }
+  }
+}

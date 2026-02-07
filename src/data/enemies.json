@@ -1,0 +1,253 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "dungeon": "crypt",
+    "theme": "Undead / necromantic",
+    "scalingFormulas": {
+      "enemyHp": "base_hp × (1 + floor × 0.12)",
+      "enemyAtk": "base_atk × (1 + floor × 0.10)",
+      "eliteHpMult": 1.8,
+      "bossHpMult": 3.5
+    },
+    "distribution": {
+      "normal": 6,
+      "elite": 3,
+      "boss": 1
+    },
+    "intentSystem": "Enemies cycle through their pattern array. Index resets to 0 after reaching end. Pattern represents INTENT shown to player before enemy acts."
+  },
+
+  "enemies": [
+
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "type": "normal",
+      "baseHp": 28,
+      "baseAtk": 7,
+      "floors": [1, 5],
+      "pattern": [
+        { "type": "attack", "value": 7, "display": "Slash" },
+        { "type": "attack", "value": 7, "display": "Slash" },
+        { "type": "defend", "value": 5, "display": "Bone Shield" }
+      ],
+      "special": null,
+      "lore": "Restless bones animated by residual crypt magic. Simple but relentless.",
+      "designNote": "Tutorial-tier enemy. Predictable 2-attack-1-block cycle. Teaches player to block on attack turns."
+    },
+
+    {
+      "id": "zombie",
+      "name": "Shambling Corpse",
+      "type": "normal",
+      "baseHp": 40,
+      "baseAtk": 5,
+      "floors": [1, 6],
+      "pattern": [
+        { "type": "attack", "value": 5, "display": "Slam" },
+        { "type": "attack", "value": 5, "display": "Slam" },
+        { "type": "attack", "value": 5, "display": "Slam" },
+        { "type": "buff", "value": 2, "effect": "str", "display": "Frenzy", "note": "Gains 2 STR permanently" }
+      ],
+      "special": "Gains STR every 4th turn. Slow threat escalation.",
+      "lore": "Decaying flesh driven by mindless hunger. Gets more dangerous the longer you ignore it.",
+      "designNote": "High HP, low ATK but scales. Teaches player that long fights are dangerous — encourages DPS."
+    },
+
+    {
+      "id": "ghost",
+      "name": "Phantom",
+      "type": "normal",
+      "baseHp": 22,
+      "baseAtk": 9,
+      "floors": [3, 8],
+      "pattern": [
+        { "type": "attack", "value": 9, "display": "Ethereal Strike" },
+        { "type": "debuff", "value": 1, "effect": "weakness", "display": "Haunting Gaze", "note": "Applies 1 Weakness" },
+        { "type": "attack", "value": 9, "display": "Ethereal Strike" }
+      ],
+      "special": "Applies Weakness. Low HP but high damage — glass cannon.",
+      "lore": "A spirit that refuses to pass on. Its gaze saps the will to fight.",
+      "designNote": "Mid-game pressure enemy. Weakness debuff taxes shield players, rewards fast kills."
+    },
+
+    {
+      "id": "bone_archer",
+      "name": "Bone Archer",
+      "type": "normal",
+      "baseHp": 25,
+      "baseAtk": 6,
+      "floors": [2, 7],
+      "pattern": [
+        { "type": "attack", "value": 6, "display": "Arrow Shot" },
+        { "type": "attack", "value": 6, "display": "Arrow Shot" },
+        { "type": "attack_multi", "value": 3, "hits": 3, "display": "Arrow Volley", "note": "3 hits of 3 damage each" }
+      ],
+      "special": "Multi-hit attack on 3rd turn. Block needs to absorb each hit separately.",
+      "lore": "Skeletal marksman firing corroded arrows. Its volley tests even the sturdiest defenses.",
+      "designNote": "Multi-hit teaches that small hits bypass big block inefficiently, and poison/thorn proc per hit."
+    },
+
+    {
+      "id": "crypt_rat",
+      "name": "Crypt Rat",
+      "type": "normal",
+      "baseHp": 18,
+      "baseAtk": 4,
+      "floors": [4, 10],
+      "pattern": [
+        { "type": "attack", "value": 4, "display": "Bite" },
+        { "type": "debuff", "value": 2, "effect": "poison", "display": "Infected Bite", "note": "Applies 2 Poison to player" }
+      ],
+      "special": "Poisons the player. Appears in groups of 2-3. Individual threat low, pack threat high.",
+      "spawnCount": { "min": 2, "max": 3 },
+      "lore": "Disease-carrying vermin that swarm in packs. Each bite festers.",
+      "designNote": "Group enemy. Tests AoE capability and heals. Poison on player creates time pressure."
+    },
+
+    {
+      "id": "necro_acolyte",
+      "name": "Necro Acolyte",
+      "type": "normal",
+      "baseHp": 30,
+      "baseAtk": 5,
+      "floors": [5, 10],
+      "pattern": [
+        { "type": "attack", "value": 5, "display": "Dark Bolt" },
+        { "type": "buff_all", "value": 3, "effect": "str", "display": "Dark Ritual", "note": "All enemies gain 3 ATK this combat" },
+        { "type": "attack", "value": 5, "display": "Dark Bolt" },
+        { "type": "defend", "value": 10, "display": "Shadow Veil" }
+      ],
+      "special": "Buffs all enemies. Priority kill target in multi-enemy fights.",
+      "lore": "A lesser priest of the dead, channeling power to its undead brethren.",
+      "designNote": "Late-game support enemy. When combined with others, creates kill-priority decisions. Buff-all on turn 2 punishes ignoring it."
+    },
+
+
+    {
+      "id": "bone_golem",
+      "name": "Bone Golem",
+      "type": "elite",
+      "baseHp": 65,
+      "baseAtk": 10,
+      "floors": [3, 3],
+      "pattern": [
+        { "type": "defend", "value": 12, "display": "Assemble Bones" },
+        { "type": "attack", "value": 10, "display": "Crushing Blow" },
+        { "type": "attack", "value": 10, "display": "Crushing Blow" },
+        { "type": "attack_defend", "value": 15, "block": 8, "display": "Bone Storm", "note": "15 damage AND 8 block" }
+      ],
+      "special": "High HP elite. Bone Storm combines offense and defense. Tests sustained DPS.",
+      "lore": "A towering construct of fused skeletal remains. Each blow shatters bones that reassemble moments later.",
+      "designNote": "First elite gate. Tankiest enemy so far. Block on turn 1 gives player 1 free setup turn (play Berserk, stack poison, etc). Bone Storm is the DPS check.",
+      "rewards": {
+        "gold": 80,
+        "cardChoices": 3,
+        "rarityBoost": 0.15
+      }
+    },
+
+    {
+      "id": "wraith",
+      "name": "Crypt Wraith",
+      "type": "elite",
+      "baseHp": 55,
+      "baseAtk": 12,
+      "floors": [6, 6],
+      "pattern": [
+        { "type": "attack", "value": 12, "display": "Soul Drain", "note": "Heals self for 50% of damage dealt" },
+        { "type": "debuff", "value": 2, "effect": "weakness", "display": "Dread Aura", "note": "Applies 2 Weakness to player" },
+        { "type": "attack", "value": 12, "display": "Soul Drain" },
+        { "type": "attack", "value": 18, "display": "Death Scream", "note": "Heavy single hit" }
+      ],
+      "special": "Lifesteal on Soul Drain (heals 50% of damage dealt after block). Weakness disrupts berserker builds.",
+      "lore": "A malevolent spirit bound to the crypt. It feeds on the life force of the living.",
+      "designNote": "Mid-dungeon elite. Lifesteal punishes low-damage decks (fight drags → it heals). Weakness punishes pure STR. Poison archetype is strong here (poison ignores lifesteal). Death Scream on turn 4 is a burst check.",
+      "rewards": {
+        "gold": 120,
+        "cardChoices": 3,
+        "rarityBoost": 0.20
+      }
+    },
+
+    {
+      "id": "lich_apprentice",
+      "name": "Lich Apprentice",
+      "type": "elite",
+      "baseHp": 70,
+      "baseAtk": 8,
+      "floors": [9, 9],
+      "pattern": [
+        { "type": "buff", "value": 0, "effect": "summon_skeleton", "display": "Raise Dead", "note": "Summons 1 Skeleton (base stats)" },
+        { "type": "attack", "value": 8, "display": "Necrotic Bolt" },
+        { "type": "debuff", "value": 3, "effect": "poison", "display": "Corpse Gas", "note": "Applies 3 Poison to player" },
+        { "type": "attack", "value": 8, "display": "Necrotic Bolt" },
+        { "type": "buff", "value": 0, "effect": "summon_skeleton", "display": "Raise Dead" }
+      ],
+      "special": "Summons Skeleton minions every 4 turns. Creates multi-enemy fights from single encounter. Poisons player.",
+      "lore": "A student of forbidden arts, not yet powerful enough to be a true lich. Still deadly enough to command the dead.",
+      "designNote": "Pre-boss elite. Tests both AoE (summons) and single-target DPS (need to kill apprentice before overrun). Poison adds ticking clock. Hardest regular fight in the dungeon.",
+      "rewards": {
+        "gold": 160,
+        "cardChoices": 3,
+        "rarityBoost": 0.25
+      }
+    },
+
+
+    {
+      "id": "crypt_lord",
+      "name": "The Crypt Lord",
+      "type": "boss",
+      "baseHp": 180,
+      "baseAtk": 12,
+      "floors": [10, 10],
+      "phases": [
+        {
+          "name": "Phase 1: The Tyrant",
+          "trigger": "HP > 50%",
+          "pattern": [
+            { "type": "attack", "value": 12, "display": "Tombcleaver" },
+            { "type": "defend", "value": 15, "display": "Wall of Bones" },
+            { "type": "attack", "value": 12, "display": "Tombcleaver" },
+            { "type": "debuff_attack", "value": 8, "effect": "weakness:2", "display": "Oppressive Strike", "note": "8 damage + 2 Weakness to player" },
+            { "type": "attack_multi", "value": 4, "hits": 4, "display": "Bone Barrage", "note": "4 hits of 4 damage" }
+          ],
+          "designNote": "Phase 1 is manageable. Mix of single hits and multi-hit. Wall of Bones on turn 2 gives a breather but also slows DPS race. Oppressive Strike is the archetype-tester: Weakness hurts berserker, multi-hit hurts shield players."
+        },
+        {
+          "name": "Phase 2: The Undying",
+          "trigger": "HP ≤ 50%",
+          "transitionEffect": "Crypt Lord roars. All his wounds seal. Gains 3 STR and 15 Block.",
+          "pattern": [
+            { "type": "attack", "value": 15, "display": "Grave Smash", "note": "Base ATK increased by +3 STR from transition" },
+            { "type": "buff", "value": 0, "effect": "summon_skeleton:2", "display": "Army of the Dead", "note": "Summons 2 Skeletons" },
+            { "type": "attack", "value": 20, "display": "Soul Harvest", "note": "Heavy hit. Heals 10 HP." },
+            { "type": "defend_attack", "value": 12, "block": 20, "display": "Bone Fortress", "note": "20 block + 12 damage" }
+          ],
+          "designNote": "Phase 2 escalates. Summons + lifesteal + higher damage. Army of the Dead on turn 2 creates AoE pressure. Soul Harvest is the hardest single hit in the dungeon. Bone Fortress combines offense/defense. Player needs to burn through faster than he heals."
+        }
+      ],
+      "special": "Two-phase boss. Phase transition at 50% HP grants +3 STR and 15 Block. Summons skeletons in Phase 2. Soul Harvest has lifesteal (heals 10 flat HP).",
+      "archetypeChecks": {
+        "berserker": "STR-stacked deck can burn Phase 1 fast, but Oppressive Strike Weakness slows P2. Need vulnerability or raw damage.",
+        "poison": "Poison ignores block — good vs Wall of Bones/Bone Fortress. Catalyst before P2 can melt HP. Weakness is manageable since poison is passive.",
+        "shield": "Thorn chips at boss HP through block. Multi-hits in both phases proc thorn. Barricade + high block handles Soul Harvest. Slowest win but safest."
+      },
+      "targetTurnsToKill": {
+        "wellBuiltDeck": "12-18 turns",
+        "averageDeck": "20-25 turns",
+        "underbuiltDeck": "likely dies in Phase 2"
+      },
+      "lore": "Once a great warlord, now an eternal tyrant ruling a kingdom of bones. His crypt is both throne room and prison — he cannot leave, but nothing that enters leaves either.",
+      "rewards": {
+        "gold": 300,
+        "cardChoices": 3,
+        "rarityGuaranteed": "rare",
+        "foilBase": 41,
+        "blueprintChance": 0.25,
+        "prestige_unlock": true
+      }
+    }
+  ]
+}
