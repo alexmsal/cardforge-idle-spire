@@ -66,15 +66,37 @@ export class BattleEngine {
 
   /** Run a full combat until win/lose/draw and return a summary */
   runFullCombat(): BattleSummary {
-    while (this.state.phase !== 'won' && this.state.phase !== 'lost') {
+    while (!this.isFinished()) {
       if (this.state.turn >= this.state.maxTurns) {
         this.state.phase = 'lost';
         this.log('system', 'Turn limit reached — construct collapses.');
         break;
       }
-      this.runTurn();
+      this.executeTurn();
     }
 
+    return this.getBattleSummary();
+  }
+
+  /** Run a single turn. Returns true if combat is still ongoing. */
+  runSingleTurn(): boolean {
+    if (this.state.phase === 'won' || this.state.phase === 'lost') return false;
+    if (this.state.turn >= this.state.maxTurns) {
+      this.state.phase = 'lost';
+      this.log('system', 'Turn limit reached — construct collapses.');
+      return false;
+    }
+    this.executeTurn();
+    return !this.isFinished();
+  }
+
+  private isFinished(): boolean {
+    const p = this.state.phase as string;
+    return p === 'won' || p === 'lost';
+  }
+
+  /** Get a summary of the current battle state */
+  getBattleSummary(): BattleSummary {
     const result: BattleResult =
       this.state.phase === 'won' ? 'win' : 'lose';
 
@@ -89,8 +111,13 @@ export class BattleEngine {
     };
   }
 
+  /** Returns the index into the log where this turn's entries start */
+  getLogLength(): number {
+    return this.state.log.length;
+  }
+
   /** Execute one full turn: player phase then enemy phase */
-  private runTurn(): void {
+  private executeTurn(): void {
     this.state.turn++;
     this.state.phase = 'player_turn';
     this.log('system', `=== Turn ${this.state.turn} ===`);
