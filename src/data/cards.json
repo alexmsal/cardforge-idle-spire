@@ -1,0 +1,1048 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "totalCards": 50,
+    "distribution": {
+      "common": 30,
+      "uncommon": 15,
+      "rare": 5
+    },
+    "archetypeDistribution": {
+      "berserker": { "common": 6, "uncommon": 3, "rare": 1 },
+      "poison": { "common": 6, "uncommon": 3, "rare": 1 },
+      "shield": { "common": 6, "uncommon": 3, "rare": 1 },
+      "neutral": { "common": 12, "uncommon": 6, "rare": 2 }
+    },
+    "ppBudget": {
+      "common": 4,
+      "uncommon": 7,
+      "rare": 11
+    },
+    "ppConversion": {
+      "1 damage": 0.5,
+      "1 block": 0.5,
+      "1 AoE damage": 1.0,
+      "1 poison": 0.7,
+      "1 burn": 0.7,
+      "1 thorn": 0.8,
+      "1 weakness": 0.8,
+      "1 vulnerability": 0.8,
+      "draw 1 card": 3.0,
+      "+1 energy": 3.0,
+      "+1 STR permanent": 2.5,
+      "+1 DEX permanent": 2.5,
+      "heal 1 HP": 0.4
+    }
+  },
+  "cards": [
+
+    {
+      "id": "strike",
+      "name": "Strike",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 8, "target": "enemy" }
+      ],
+      "ppCalc": "8 dmg × 0.5 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 10 },
+        "2": { "damage": 13 },
+        "3": { "damage": 17 }
+      }
+    },
+    {
+      "id": "defend",
+      "name": "Defend",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "block", "value": 8, "target": "self" }
+      ],
+      "ppCalc": "8 block × 0.5 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "block": 10 },
+        "2": { "block": 13 },
+        "3": { "block": 17 }
+      }
+    },
+    {
+      "id": "quick_slash",
+      "name": "Quick Slash",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 4, "target": "enemy" }
+      ],
+      "ppCalc": "4 dmg × 0.5 = 2.0 PP + 2.0 PP (0-cost bonus) = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 5 },
+        "2": { "damage": 7 },
+        "3": { "damage": 9 }
+      }
+    },
+    {
+      "id": "bash",
+      "name": "Bash",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 2,
+      "archetype": "neutral",
+      "keywords": ["vulnerability"],
+      "effects": [
+        { "type": "damage", "value": 10, "target": "enemy" },
+        { "type": "vulnerability", "value": 1, "target": "enemy" }
+      ],
+      "ppCalc": "10 dmg × 0.5 = 5.0 − 1.0 (2-cost penalty) + 1 vuln × 0.8 = 0.8 → 4.0 PP (adjusted −0.8 for 2-cost)",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 13, "vulnerability": 1 },
+        "2": { "damage": 17, "vulnerability": 2 },
+        "3": { "damage": 22, "vulnerability": 2 }
+      }
+    },
+    {
+      "id": "healing_potion",
+      "name": "Healing Potion",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "heal", "value": 10, "target": "self" }
+      ],
+      "ppCalc": "10 heal × 0.4 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "heal": 13 },
+        "2": { "heal": 17 },
+        "3": { "heal": 22 }
+      }
+    },
+    {
+      "id": "shield_bash",
+      "name": "Shield Bash",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 4, "target": "enemy" },
+        { "type": "block", "value": 4, "target": "self" }
+      ],
+      "ppCalc": "4 dmg × 0.5 + 4 block × 0.5 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 5, "block": 5 },
+        "2": { "damage": 7, "block": 7 },
+        "3": { "damage": 9, "block": 9 }
+      }
+    },
+    {
+      "id": "double_tap",
+      "name": "Double Tap",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 4, "target": "enemy" },
+        { "type": "damage", "value": 4, "target": "enemy" }
+      ],
+      "ppCalc": "4+4 dmg × 0.5 = 4.0 PP (two separate hits)",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 5 },
+        "2": { "damage": 7 },
+        "3": { "damage": 9 }
+      }
+    },
+    {
+      "id": "bandage",
+      "name": "Bandage",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "heal", "value": 5, "target": "self" }
+      ],
+      "ppCalc": "5 heal × 0.4 = 2.0 + 2.0 (0-cost) = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "heal": 7 },
+        "2": { "heal": 9 },
+        "3": { "heal": 12 }
+      }
+    },
+    {
+      "id": "iron_wave",
+      "name": "Iron Wave",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 5, "target": "enemy" },
+        { "type": "block", "value": 3, "target": "self" }
+      ],
+      "ppCalc": "5 dmg × 0.5 + 3 block × 0.5 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 7, "block": 4 },
+        "2": { "damage": 9, "block": 5 },
+        "3": { "damage": 12, "block": 7 }
+      }
+    },
+    {
+      "id": "assess",
+      "name": "Assess",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "block", "value": 5, "target": "self" },
+        { "type": "weakness", "value": 1, "target": "enemy" }
+      ],
+      "ppCalc": "5 block × 0.5 + 1 weak × 0.8 = 3.3 PP (rounded to ~4 with minor flex)",
+      "ppTotal": 3.8,
+      "upgrade": {
+        "1": { "block": 7, "weakness": 1 },
+        "2": { "block": 9, "weakness": 2 },
+        "3": { "block": 12, "weakness": 2 }
+      }
+    },
+    {
+      "id": "reckless_strike",
+      "name": "Reckless Strike",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 12, "target": "enemy" },
+        { "type": "damage_self", "value": 4, "target": "self" }
+      ],
+      "ppCalc": "12 dmg × 0.5 = 6.0 − 4 self-dmg × 0.5 = 2.0 penalty → 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 16, "damage_self": 4 },
+        "2": { "damage": 21, "damage_self": 4 },
+        "3": { "damage": 27, "damage_self": 4 }
+      }
+    },
+    {
+      "id": "sweep",
+      "name": "Sweep",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": ["aoe"],
+      "effects": [
+        { "type": "damage_aoe", "value": 4, "target": "all_enemies" }
+      ],
+      "ppCalc": "4 AoE × 1.0 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage_aoe": 5 },
+        "2": { "damage_aoe": 7 },
+        "3": { "damage_aoe": 9 }
+      }
+    },
+
+    {
+      "id": "rage_strike",
+      "name": "Rage Strike",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 6, "target": "enemy" },
+        { "type": "damage_self", "value": 2, "target": "self" },
+        { "type": "str", "value": 1, "target": "self", "duration": "combat" }
+      ],
+      "ppCalc": "6 dmg × 0.5 + 1 temp-STR × 1.2 = 4.2 − self-dmg 2×0.5 = 1.0 → ~4.2 PP",
+      "ppTotal": 4.2,
+      "upgrade": {
+        "1": { "damage": 8, "str": 1 },
+        "2": { "damage": 10, "str": 1 },
+        "3": { "damage": 13, "str": 2 }
+      }
+    },
+    {
+      "id": "fury",
+      "name": "Fury",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 3, "target": "enemy" },
+        { "type": "damage", "value": 3, "target": "enemy" },
+        { "type": "damage", "value": 3, "target": "enemy" }
+      ],
+      "ppCalc": "3×3 dmg × 0.5 = 4.5 PP (3 hits, STR scales ×3)",
+      "ppTotal": 4.5,
+      "upgrade": {
+        "1": { "damage": 4 },
+        "2": { "damage": 5 },
+        "3": { "damage": 6 }
+      },
+      "designNote": "Slightly over budget — balanced by each hit being individually blockable"
+    },
+    {
+      "id": "flex",
+      "name": "Flex",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 0,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "str", "value": 2, "target": "self", "duration": "turn" }
+      ],
+      "ppCalc": "2 temp-STR × 1.0 = 2.0 + 2.0 (0-cost) = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "str": 3 },
+        "2": { "str": 4 },
+        "3": { "str": 5 }
+      }
+    },
+    {
+      "id": "headbutt",
+      "name": "Headbutt",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 8, "target": "enemy" },
+        { "type": "damage_self", "value": 2, "target": "self" }
+      ],
+      "ppCalc": "8 dmg × 0.5 = 4.0 + self-dmg flexibility bonus → 4.0 PP (net after self-hurt offset)",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "damage": 10 },
+        "2": { "damage": 13 },
+        "3": { "damage": 17 }
+      },
+      "designNote": "Self-damage is thematic for berserker but doesn't add PP — trades survivability for raw numbers"
+    },
+    {
+      "id": "war_cry",
+      "name": "War Cry",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": ["vulnerability"],
+      "effects": [
+        { "type": "vulnerability", "value": 2, "target": "enemy" },
+        { "type": "damage_self", "value": 3, "target": "self" }
+      ],
+      "ppCalc": "2 vuln × 0.8 = 1.6 + inherent berserker self-dmg offset → ~4.0 PP",
+      "ppTotal": 3.6,
+      "upgrade": {
+        "1": { "vulnerability": 3 },
+        "2": { "vulnerability": 3, "damage_self": 2 },
+        "3": { "vulnerability": 4, "damage_self": 2 }
+      }
+    },
+    {
+      "id": "bloodlust",
+      "name": "Bloodlust",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": ["vampirism"],
+      "effects": [
+        { "type": "damage", "value": 6, "target": "enemy" },
+        { "type": "heal", "value": 3, "target": "self" }
+      ],
+      "ppCalc": "6 dmg × 0.5 + 3 heal × 0.4 = 4.2 PP",
+      "ppTotal": 4.2,
+      "upgrade": {
+        "1": { "damage": 8, "heal": 4 },
+        "2": { "damage": 10, "heal": 5 },
+        "3": { "damage": 13, "heal": 7 }
+      }
+    },
+
+    {
+      "id": "poisoned_blade",
+      "name": "Poisoned Blade",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "damage", "value": 3, "target": "enemy" },
+        { "type": "poison", "value": 3, "target": "enemy" }
+      ],
+      "ppCalc": "3 dmg × 0.5 + 3 poison × 0.7 = 3.6 PP (~4.0)",
+      "ppTotal": 3.6,
+      "upgrade": {
+        "1": { "damage": 4, "poison": 4 },
+        "2": { "damage": 5, "poison": 5 },
+        "3": { "damage": 7, "poison": 7 }
+      }
+    },
+    {
+      "id": "noxious_cloud",
+      "name": "Noxious Cloud",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison", "aoe"],
+      "effects": [
+        { "type": "poison_aoe", "value": 2, "target": "all_enemies" }
+      ],
+      "ppCalc": "2 poison AoE × 1.4 (0.7 × 2 AoE mult) = 2.8 + ~1.0 utility = ~4.0 PP",
+      "ppTotal": 3.8,
+      "upgrade": {
+        "1": { "poison_aoe": 3 },
+        "2": { "poison_aoe": 4 },
+        "3": { "poison_aoe": 5 }
+      }
+    },
+    {
+      "id": "envenom",
+      "name": "Envenom",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "poison", "value": 5, "target": "enemy" }
+      ],
+      "ppCalc": "5 poison × 0.7 = 3.5 PP (~4.0)",
+      "ppTotal": 3.5,
+      "upgrade": {
+        "1": { "poison": 7 },
+        "2": { "poison": 9 },
+        "3": { "poison": 12 }
+      }
+    },
+    {
+      "id": "toxic_stab",
+      "name": "Toxic Stab",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 0,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "damage", "value": 2, "target": "enemy" },
+        { "type": "poison", "value": 1, "target": "enemy" }
+      ],
+      "ppCalc": "2 dmg × 0.5 + 1 poison × 0.7 = 1.7 + 2.0 (0-cost) = 3.7 PP",
+      "ppTotal": 3.7,
+      "upgrade": {
+        "1": { "damage": 3, "poison": 2 },
+        "2": { "damage": 4, "poison": 3 },
+        "3": { "damage": 5, "poison": 4 }
+      }
+    },
+    {
+      "id": "weaken",
+      "name": "Weaken",
+      "rarity": "common",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["weakness", "poison"],
+      "effects": [
+        { "type": "weakness", "value": 2, "target": "enemy" },
+        { "type": "poison", "value": 2, "target": "enemy" }
+      ],
+      "ppCalc": "2 weak × 0.8 + 2 poison × 0.7 = 3.0 PP (~4.0 with utility)",
+      "ppTotal": 3.0,
+      "upgrade": {
+        "1": { "weakness": 2, "poison": 3 },
+        "2": { "weakness": 3, "poison": 4 },
+        "3": { "weakness": 3, "poison": 5 }
+      }
+    },
+    {
+      "id": "festering_wound",
+      "name": "Festering Wound",
+      "rarity": "common",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "damage", "value": 4, "target": "enemy" },
+        { "type": "poison", "value": 2, "target": "enemy" },
+        { "type": "weakness", "value": 1, "target": "enemy" }
+      ],
+      "ppCalc": "4 dmg × 0.5 + 2 poison × 0.7 + 1 weak × 0.8 = 4.2 PP",
+      "ppTotal": 4.2,
+      "upgrade": {
+        "1": { "damage": 5, "poison": 3, "weakness": 1 },
+        "2": { "damage": 7, "poison": 4, "weakness": 1 },
+        "3": { "damage": 9, "poison": 5, "weakness": 2 }
+      }
+    },
+
+    {
+      "id": "iron_bastion",
+      "name": "Iron Bastion",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 1,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 5, "target": "self" },
+        { "type": "thorn", "value": 1, "target": "self", "duration": "combat" }
+      ],
+      "ppCalc": "5 block × 0.5 + 1 thorn × 0.8 = 3.3 PP (~4.0)",
+      "ppTotal": 3.3,
+      "upgrade": {
+        "1": { "block": 7, "thorn": 1 },
+        "2": { "block": 9, "thorn": 2 },
+        "3": { "block": 12, "thorn": 2 }
+      }
+    },
+    {
+      "id": "fortify",
+      "name": "Fortify",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 1,
+      "archetype": "shield",
+      "keywords": [],
+      "effects": [
+        { "type": "block", "value": 6, "target": "self" },
+        { "type": "dex", "value": 1, "target": "self", "duration": "turn" }
+      ],
+      "ppCalc": "6 block × 0.5 + 1 temp-DEX × 1.0 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "block": 8, "dex": 1 },
+        "2": { "block": 10, "dex": 2 },
+        "3": { "block": 13, "dex": 2 }
+      }
+    },
+    {
+      "id": "spike_armor",
+      "name": "Spike Armor",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 1,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 3, "target": "self" },
+        { "type": "thorn", "value": 2, "target": "self", "duration": "turn" }
+      ],
+      "ppCalc": "3 block × 0.5 + 2 thorn × 0.8 = 3.1 PP (~4.0 with thorn scaling value)",
+      "ppTotal": 3.1,
+      "upgrade": {
+        "1": { "block": 4, "thorn": 3 },
+        "2": { "block": 5, "thorn": 4 },
+        "3": { "block": 7, "thorn": 5 }
+      }
+    },
+    {
+      "id": "shield_wall",
+      "name": "Shield Wall",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 2,
+      "archetype": "shield",
+      "keywords": [],
+      "effects": [
+        { "type": "block", "value": 16, "target": "self" }
+      ],
+      "ppCalc": "16 block × 0.5 = 8.0 − 4.0 (2-cost penalty) = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "block": 21 },
+        "2": { "block": 27 },
+        "3": { "block": 35 }
+      }
+    },
+    {
+      "id": "retaliate",
+      "name": "Retaliate",
+      "rarity": "common",
+      "type": "reaction",
+      "cost": 1,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 4, "target": "self" },
+        { "type": "damage_on_hit", "value": 4, "target": "attacker" }
+      ],
+      "ppCalc": "4 block × 0.5 + 4 retaliation × 0.5 = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "block": 5, "damage_on_hit": 5 },
+        "2": { "block": 7, "damage_on_hit": 7 },
+        "3": { "block": 9, "damage_on_hit": 9 }
+      }
+    },
+    {
+      "id": "hunker_down",
+      "name": "Hunker Down",
+      "rarity": "common",
+      "type": "defense",
+      "cost": 0,
+      "archetype": "shield",
+      "keywords": [],
+      "effects": [
+        { "type": "block", "value": 4, "target": "self" }
+      ],
+      "ppCalc": "4 block × 0.5 = 2.0 + 2.0 (0-cost) = 4.0 PP",
+      "ppTotal": 4.0,
+      "upgrade": {
+        "1": { "block": 5 },
+        "2": { "block": 7 },
+        "3": { "block": 9 }
+      }
+    },
+
+
+    {
+      "id": "power_strike",
+      "name": "Power Strike",
+      "rarity": "uncommon",
+      "type": "attack",
+      "cost": 2,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 20, "target": "enemy" }
+      ],
+      "ppCalc": "20 dmg × 0.5 = 10.0 − 3.0 (2-cost) = 7.0 PP",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "damage": 26 },
+        "2": { "damage": 34 },
+        "3": { "damage": 44 }
+      }
+    },
+    {
+      "id": "second_wind",
+      "name": "Second Wind",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "heal", "value": 8, "target": "self" },
+        { "type": "block", "value": 6, "target": "self" }
+      ],
+      "ppCalc": "8 heal × 0.4 + 6 block × 0.5 = 6.2 PP (~7.0)",
+      "ppTotal": 6.2,
+      "upgrade": {
+        "1": { "heal": 10, "block": 8 },
+        "2": { "heal": 13, "block": 10 },
+        "3": { "heal": 17, "block": 13 }
+      }
+    },
+    {
+      "id": "adrenaline",
+      "name": "Adrenaline",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "energy", "value": 1, "target": "self" },
+        { "type": "draw", "value": 1, "target": "self" }
+      ],
+      "ppCalc": "1 energy × 3.0 + 1 draw × 3.0 = 6.0 + 0-cost → 8.0 (slightly over; balanced by exhaust on use)",
+      "ppTotal": 7.0,
+      "exhaust": true,
+      "upgrade": {
+        "1": { "draw": 2 },
+        "2": { "draw": 2, "energy": 2 },
+        "3": { "draw": 3, "energy": 2 }
+      },
+      "designNote": "Exhausts after use. Powerful tempo card, but single-use per combat."
+    },
+    {
+      "id": "cleave",
+      "name": "Cleave",
+      "rarity": "uncommon",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": ["aoe"],
+      "effects": [
+        { "type": "damage_aoe", "value": 7, "target": "all_enemies" }
+      ],
+      "ppCalc": "7 AoE × 1.0 = 7.0 PP",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "damage_aoe": 9 },
+        "2": { "damage_aoe": 12 },
+        "3": { "damage_aoe": 16 }
+      }
+    },
+    {
+      "id": "intimidate",
+      "name": "Intimidate",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": ["weakness"],
+      "effects": [
+        { "type": "weakness", "value": 3, "target": "all_enemies" },
+        { "type": "block", "value": 5, "target": "self" }
+      ],
+      "ppCalc": "3 weak-AoE × 1.6 + 5 block × 0.5 = 7.3 PP",
+      "ppTotal": 7.3,
+      "upgrade": {
+        "1": { "weakness": 3, "block": 7 },
+        "2": { "weakness": 4, "block": 9 },
+        "3": { "weakness": 5, "block": 12 }
+      }
+    },
+    {
+      "id": "battle_trance",
+      "name": "Battle Trance",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "draw", "value": 2, "target": "self" }
+      ],
+      "ppCalc": "2 draw × 3.0 = 6.0 PP (~7.0 with card advantage value)",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "draw": 2, "_bonus": "also gain 3 block" },
+        "2": { "draw": 3 },
+        "3": { "draw": 3, "_bonus": "also gain 5 block" }
+      }
+    },
+
+    {
+      "id": "berserk",
+      "name": "Berserk",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 2,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "str", "value": 2, "target": "self", "duration": "combat" },
+        { "type": "vulnerability_self", "value": 1, "target": "self" }
+      ],
+      "ppCalc": "2 perm-STR × 2.5 = 5.0 − vuln-self 1×0.8 = 0.8 penalty + 3.0 (2-cost return) → ~7.0 PP",
+      "ppTotal": 7.2,
+      "upgrade": {
+        "1": { "str": 3 },
+        "2": { "str": 3, "vulnerability_self": 0 },
+        "3": { "str": 4, "vulnerability_self": 0 }
+      }
+    },
+    {
+      "id": "rampage",
+      "name": "Rampage",
+      "rarity": "uncommon",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "damage", "value": 8, "target": "enemy" },
+        { "type": "damage_ramp", "value": 4, "note": "+4 damage each time played this combat" }
+      ],
+      "ppCalc": "8 base + scaling → 7.0 PP (value increases over combat)",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "damage": 10, "damage_ramp": 5 },
+        "2": { "damage": 13, "damage_ramp": 6 },
+        "3": { "damage": 17, "damage_ramp": 8 }
+      }
+    },
+    {
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "rarity": "uncommon",
+      "type": "attack",
+      "cost": 0,
+      "archetype": "berserker",
+      "keywords": ["aoe"],
+      "effects": [
+        { "type": "damage_aoe", "value": 5, "target": "all_enemies", "note": "Spend ALL remaining energy. Hit X times where X = energy spent + 1" }
+      ],
+      "ppCalc": "Variable — avg 3 energy × 5 AoE = ~15.0 raw but X-cost normalizes to ~7.0 PP",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "damage_aoe": 7 },
+        "2": { "damage_aoe": 9 },
+        "3": { "damage_aoe": 12 }
+      },
+      "designNote": "X-cost card. Spends all remaining energy. Best played last in turn."
+    },
+
+    {
+      "id": "catalyst",
+      "name": "Catalyst",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "poison_multiply", "value": 2, "target": "enemy", "note": "Double enemy's poison stacks" }
+      ],
+      "ppCalc": "Doubler effect ≈ 7.0 PP (synergy multiplier, max ×3 per GDD §25)",
+      "ppTotal": 7.0,
+      "exhaust": true,
+      "upgrade": {
+        "1": { "poison_multiply": 2, "_bonus": "no longer exhausts" },
+        "2": { "poison_multiply": 3 },
+        "3": { "poison_multiply": 3, "_bonus": "no longer exhausts" }
+      },
+      "designNote": "Key poison archetype payoff. Exhausts at base to prevent infinite loops."
+    },
+    {
+      "id": "plague_bearer",
+      "name": "Plague Bearer",
+      "rarity": "uncommon",
+      "type": "attack",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "damage", "value": 6, "target": "enemy" },
+        { "type": "poison", "value": 4, "target": "enemy" },
+        { "type": "poison", "value": 2, "target": "self" }
+      ],
+      "ppCalc": "6 dmg × 0.5 + 4 poison × 0.7 = 5.8 − self-poison 2×0.7 = 1.4 penalty → ~7.0 PP (adjusted)",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "damage": 8, "poison": 5, "poison_self": 2 },
+        "2": { "damage": 10, "poison": 7, "poison_self": 1 },
+        "3": { "damage": 13, "poison": 9, "poison_self": 0 }
+      }
+    },
+    {
+      "id": "crippling_poison",
+      "name": "Crippling Poison",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 1,
+      "archetype": "poison",
+      "keywords": ["poison", "weakness"],
+      "effects": [
+        { "type": "poison", "value": 4, "target": "enemy" },
+        { "type": "weakness", "value": 2, "target": "enemy" }
+      ],
+      "ppCalc": "4 poison × 0.7 + 2 weak × 0.8 = 4.4 PP (under 7 — balanced by dual-debuff synergy value)",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "poison": 5, "weakness": 3 },
+        "2": { "poison": 7, "weakness": 3 },
+        "3": { "poison": 9, "weakness": 4 }
+      },
+      "designNote": "Dual debuff creates high synergy value beyond raw PP"
+    },
+
+    {
+      "id": "iron_fortress",
+      "name": "Iron Fortress",
+      "rarity": "uncommon",
+      "type": "defense",
+      "cost": 2,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 18, "target": "self" },
+        { "type": "thorn", "value": 2, "target": "self", "duration": "combat" }
+      ],
+      "ppCalc": "18 block × 0.5 + 2 thorn × 0.8 = 10.6 − 3.0 (2-cost) = 7.6 PP",
+      "ppTotal": 7.6,
+      "upgrade": {
+        "1": { "block": 23, "thorn": 3 },
+        "2": { "block": 30, "thorn": 3 },
+        "3": { "block": 39, "thorn": 4 }
+      }
+    },
+    {
+      "id": "barricade",
+      "name": "Barricade",
+      "rarity": "uncommon",
+      "type": "skill",
+      "cost": 2,
+      "archetype": "shield",
+      "keywords": [],
+      "effects": [
+        { "type": "block_retain", "value": true, "target": "self", "note": "Block no longer decays at start of turn" }
+      ],
+      "ppCalc": "Passive effect ≈ 7.0 PP (transforms block economy entirely)",
+      "ppTotal": 7.0,
+      "exhaust": true,
+      "upgrade": {
+        "1": { "_bonus": "cost reduced to 1" },
+        "2": { "_bonus": "cost reduced to 1, gain 5 block" },
+        "3": { "_bonus": "cost reduced to 0, gain 8 block" }
+      },
+      "designNote": "Build-around uncommon for shield archetype. Exhausts to prevent re-play."
+    },
+    {
+      "id": "reflect",
+      "name": "Reflect",
+      "rarity": "uncommon",
+      "type": "defense",
+      "cost": 1,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 8, "target": "self" },
+        { "type": "thorn", "value": 2, "target": "self", "duration": "turn" }
+      ],
+      "ppCalc": "8 block × 0.5 + 2 thorn × 0.8 = 5.6 PP + turn-utility → ~7.0 PP",
+      "ppTotal": 7.0,
+      "upgrade": {
+        "1": { "block": 10, "thorn": 3 },
+        "2": { "block": 13, "thorn": 4 },
+        "3": { "block": 17, "thorn": 5 }
+      }
+    },
+
+    {
+      "id": "blade_whirl",
+      "name": "Blade Whirl",
+      "rarity": "rare",
+      "type": "attack",
+      "cost": 2,
+      "archetype": "neutral",
+      "keywords": ["aoe"],
+      "effects": [
+        { "type": "damage_aoe", "value": 10, "target": "all_enemies" },
+        { "type": "vulnerability", "value": 2, "target": "all_enemies" }
+      ],
+      "ppCalc": "10 AoE × 1.0 + 2 vuln-AoE × 1.6 = 13.2 − 3.0 (2-cost) = 10.2 PP (~11.0)",
+      "ppTotal": 10.2,
+      "upgrade": {
+        "1": { "damage_aoe": 13, "vulnerability": 2 },
+        "2": { "damage_aoe": 17, "vulnerability": 3 },
+        "3": { "damage_aoe": 22, "vulnerability": 3 }
+      }
+    },
+    {
+      "id": "offering",
+      "name": "Offering",
+      "rarity": "rare",
+      "type": "skill",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": [],
+      "effects": [
+        { "type": "energy", "value": 2, "target": "self" },
+        { "type": "draw", "value": 3, "target": "self" },
+        { "type": "damage_self", "value": 8, "target": "self" }
+      ],
+      "ppCalc": "2 energy × 3.0 + 3 draw × 3.0 = 15.0 − 8 self-dmg × 0.5 = 4.0 → 11.0 PP",
+      "ppTotal": 11.0,
+      "exhaust": true,
+      "upgrade": {
+        "1": { "energy": 2, "draw": 3, "damage_self": 6 },
+        "2": { "energy": 2, "draw": 4, "damage_self": 6 },
+        "3": { "energy": 3, "draw": 4, "damage_self": 5 }
+      }
+    },
+    {
+      "id": "demon_form",
+      "name": "Demon Form",
+      "rarity": "rare",
+      "type": "skill",
+      "cost": 3,
+      "archetype": "berserker",
+      "keywords": [],
+      "effects": [
+        { "type": "str_per_turn", "value": 2, "target": "self", "note": "Gain 2 STR at start of each turn" }
+      ],
+      "ppCalc": "2 STR/turn permanent scaling = 11.0 PP (high cost, slow buildup, enormous late value)",
+      "ppTotal": 11.0,
+      "upgrade": {
+        "1": { "str_per_turn": 3 },
+        "2": { "str_per_turn": 3, "_bonus": "cost reduced to 2" },
+        "3": { "str_per_turn": 4, "_bonus": "cost reduced to 2" }
+      }
+    },
+    {
+      "id": "corpse_explosion",
+      "name": "Corpse Explosion",
+      "rarity": "rare",
+      "type": "skill",
+      "cost": 2,
+      "archetype": "poison",
+      "keywords": ["poison"],
+      "effects": [
+        { "type": "corpse_explode", "value": true, "target": "enemy", "note": "When this enemy dies, deal damage equal to its max HP to all other enemies" },
+        { "type": "poison", "value": 6, "target": "enemy" }
+      ],
+      "ppCalc": "AoE-on-death effect ≈ 7.0 + 6 poison × 0.7 = 4.2 → 11.2 PP",
+      "ppTotal": 11.2,
+      "upgrade": {
+        "1": { "poison": 8 },
+        "2": { "poison": 10, "_bonus": "cost reduced to 1" },
+        "3": { "poison": 12, "_bonus": "cost reduced to 1" }
+      }
+    },
+    {
+      "id": "impregnable",
+      "name": "Impregnable",
+      "rarity": "rare",
+      "type": "defense",
+      "cost": 2,
+      "archetype": "shield",
+      "keywords": ["thorn"],
+      "effects": [
+        { "type": "block", "value": 20, "target": "self" },
+        { "type": "thorn", "value": 3, "target": "self", "duration": "combat" },
+        { "type": "dex", "value": 1, "target": "self", "duration": "combat" }
+      ],
+      "ppCalc": "20 block × 0.5 + 3 thorn × 0.8 + 1 perm-DEX × 2.5 = 14.9 − 3.0 (2-cost) = 11.9 PP",
+      "ppTotal": 11.9,
+      "upgrade": {
+        "1": { "block": 26, "thorn": 4, "dex": 1 },
+        "2": { "block": 34, "thorn": 4, "dex": 2 },
+        "3": { "block": 44, "thorn": 5, "dex": 2 }
+      }
+    }
+  ]
+}
