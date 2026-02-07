@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { GameStateProvider } from './hooks/useGameState';
 import { RunStateProvider } from './hooks/useRunState';
 import { NavBar } from './components/NavBar';
@@ -12,7 +12,7 @@ function App() {
   return (
     <GameStateProvider>
       <RunStateProvider>
-        <BrowserRouter>
+        <HashRouter>
           <div className="min-h-screen bg-gray-900 text-white flex flex-col">
             <NavBar />
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -26,7 +26,7 @@ function App() {
               </Routes>
             </div>
           </div>
-        </BrowserRouter>
+        </HashRouter>
       </RunStateProvider>
     </GameStateProvider>
   );
