@@ -35,6 +35,20 @@ export const chestRewardsConfig = cfg.chestRewards;
 export const gameEvents: GameEvent[] = cfg.events;
 export const STARTING_HP = cfg.gameConfig.combat.startingHp as number;
 
+// ─── Workshop / crafting data ────────────────────────────
+
+export const craftingConfig = cfg.gameConfig.crafting as {
+  enhanceCost: string;
+  transmuteCost: string;
+  dismantleYield: Record<string, number>;
+  craftCost: Record<string, number>;
+};
+
+export const stationsConfig = cfg.gameConfig.stations as Record<
+  string,
+  { name: string; baseCost: number; costExponent: number; maxLevel: number; perLevel: string }
+>;
+
 // ─── Helpers ─────────────────────────────────────────────
 
 export function buildDeckFromTemplate(template: StarterDeckTemplate): Card[] {

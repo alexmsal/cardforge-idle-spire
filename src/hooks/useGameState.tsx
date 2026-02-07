@@ -6,6 +6,8 @@ import {
   getCardById,
   DECK_MAX,
   MAX_AI_RULES,
+  craftingConfig,
+  stationsConfig,
 } from '../data/gameData';
 import type { StarterDeckTemplate } from '../data/gameData';
 
@@ -13,29 +15,42 @@ import type { StarterDeckTemplate } from '../data/gameData';
 
 const STORAGE_DECK = 'cardforge_deck_ids';
 const STORAGE_AI = 'cardforge_ai_rules';
+const STORAGE_OWNED = 'cardforge_owned_ids';
+const STORAGE_SHARDS = 'cardforge_shards';
+const STORAGE_GOLD = 'cardforge_gold';
+const STORAGE_STATIONS = 'cardforge_stations';
 
-function saveDeckToStorage(cardIds: string[]) {
-  try { localStorage.setItem(STORAGE_DECK, JSON.stringify(cardIds)); } catch { /* noop */ }
+function saveJson(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
 }
 
-function loadDeckFromStorage(): string[] | null {
+function loadJson<T>(key: string): T | null {
   try {
-    const raw = localStorage.getItem(STORAGE_DECK);
-    if (raw) return JSON.parse(raw);
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw) as T;
   } catch { /* noop */ }
   return null;
 }
 
-function saveRulesToStorage(rules: AIRule[]) {
-  try { localStorage.setItem(STORAGE_AI, JSON.stringify(rules)); } catch { /* noop */ }
+// ─── Station levels ──────────────────────────────────────────
+
+export interface StationLevels {
+  anvil: number;
+  library: number;
+  portal: number;
 }
 
-function loadRulesFromStorage(): AIRule[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_AI);
-    if (raw) return JSON.parse(raw);
-  } catch { /* noop */ }
-  return null;
+const DEFAULT_STATIONS: StationLevels = { anvil: 1, library: 1, portal: 1 };
+
+export function getStationUpgradeCost(stationId: keyof StationLevels, currentLevel: number): number {
+  const cfg = stationsConfig[stationId];
+  if (!cfg) return Infinity;
+  if (currentLevel >= cfg.maxLevel) return Infinity;
+  return Math.floor(cfg.baseCost * Math.pow(currentLevel, cfg.costExponent));
+}
+
+export function getLibraryCapacity(libraryLevel: number): number {
+  return 15 + libraryLevel * 5;
 }
 
 // ─── Context type ──────────────────────────────────────────
@@ -55,6 +70,26 @@ interface GameStateContextType {
   removeRule: (index: number) => void;
   moveRule: (fromIndex: number, toIndex: number) => void;
   setAiRules: (rules: AIRule[]) => void;
+
+  // Owned cards (collection)
+  ownedCardIds: string[];
+  ownedCards: Card[];
+  addOwnedCard: (cardId: string) => void;
+  addOwnedCards: (cardIds: string[]) => void;
+  removeOwnedCard: (cardId: string) => void;
+
+  // Economy
+  gold: number;
+  shards: number;
+  addGold: (amount: number) => void;
+  spendGold: (amount: number) => boolean;
+  addShards: (amount: number) => void;
+  spendShards: (amount: number) => boolean;
+
+  // Stations
+  stationLevels: StationLevels;
+  upgradeStation: (stationId: keyof StationLevels) => boolean;
+  libraryCapacity: number;
 }
 
 const GameStateContext = createContext<GameStateContextType | null>(null);
@@ -64,7 +99,7 @@ const GameStateContext = createContext<GameStateContextType | null>(null);
 export function GameStateProvider({ children }: { children: ReactNode }) {
   // Initialize from localStorage or default template
   const [deckCardIds, setDeckCardIds] = useState<string[]>(() => {
-    const saved = loadDeckFromStorage();
+    const saved = loadJson<string[]>(STORAGE_DECK);
     if (saved && saved.length > 0) return saved;
     const template = starterTemplates[0];
     const ids: string[] = [];
@@ -75,17 +110,43 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
   });
 
   const [aiRules, setAiRulesRaw] = useState<AIRule[]>(() => {
-    const saved = loadRulesFromStorage();
+    const saved = loadJson<AIRule[]>(STORAGE_AI);
     if (saved && saved.length > 0) return saved;
     return starterTemplates[0].aiRules;
   });
 
+  const [ownedCardIds, setOwnedCardIds] = useState<string[]>(() => {
+    const saved = loadJson<string[]>(STORAGE_OWNED);
+    if (saved && saved.length > 0) return saved;
+    // Default: own the starter deck cards
+    const template = starterTemplates[0];
+    const ids: string[] = [];
+    for (const entry of template.cards) {
+      for (let i = 0; i < entry.count; i++) ids.push(entry.id);
+    }
+    return ids;
+  });
+
+  const [gold, setGold] = useState<number>(() => loadJson<number>(STORAGE_GOLD) ?? 0);
+  const [shards, setShards] = useState<number>(() => loadJson<number>(STORAGE_SHARDS) ?? 0);
+  const [stationLevels, setStationLevels] = useState<StationLevels>(
+    () => loadJson<StationLevels>(STORAGE_STATIONS) ?? DEFAULT_STATIONS,
+  );
+
   // Persist on change
-  useEffect(() => { saveDeckToStorage(deckCardIds); }, [deckCardIds]);
-  useEffect(() => { saveRulesToStorage(aiRules); }, [aiRules]);
+  useEffect(() => { saveJson(STORAGE_DECK, deckCardIds); }, [deckCardIds]);
+  useEffect(() => { saveJson(STORAGE_AI, aiRules); }, [aiRules]);
+  useEffect(() => { saveJson(STORAGE_OWNED, ownedCardIds); }, [ownedCardIds]);
+  useEffect(() => { saveJson(STORAGE_GOLD, gold); }, [gold]);
+  useEffect(() => { saveJson(STORAGE_SHARDS, shards); }, [shards]);
+  useEffect(() => { saveJson(STORAGE_STATIONS, stationLevels); }, [stationLevels]);
 
   // Resolve IDs to Card objects
   const deckCards: Card[] = deckCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined);
+  const ownedCards: Card[] = ownedCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined);
+  const libraryCapacity = getLibraryCapacity(stationLevels.library);
+
+  // ─── Deck operations ───────────────────────────────────────
 
   const addCard = useCallback((cardId: string) => {
     setDeckCardIds((prev) => {
@@ -109,7 +170,17 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     }
     setDeckCardIds(ids);
     setAiRulesRaw(template.aiRules);
+    // Also ensure all template cards are owned
+    setOwnedCardIds((prev) => {
+      const newOwned = [...prev];
+      for (const id of ids) {
+        newOwned.push(id);
+      }
+      return newOwned;
+    });
   }, []);
+
+  // ─── AI Rules ──────────────────────────────────────────────
 
   const addRule = useCallback((rule: AIRule) => {
     setAiRulesRaw((prev) => {
@@ -130,7 +201,6 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     setAiRulesRaw((prev) => {
       const next = [...prev];
       next.splice(index, 1);
-      // Re-number priorities
       return next.map((r, i) => ({ ...r, priority: i + 1 }));
     });
   }, []);
@@ -148,6 +218,72 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     setAiRulesRaw(rules.map((r, i) => ({ ...r, priority: i + 1 })));
   }, []);
 
+  // ─── Owned cards ───────────────────────────────────────────
+
+  const addOwnedCard = useCallback((cardId: string) => {
+    setOwnedCardIds((prev) => [...prev, cardId]);
+  }, []);
+
+  const addOwnedCards = useCallback((cardIds: string[]) => {
+    setOwnedCardIds((prev) => [...prev, ...cardIds]);
+  }, []);
+
+  const removeOwnedCard = useCallback((cardId: string) => {
+    setOwnedCardIds((prev) => {
+      const idx = prev.indexOf(cardId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next.splice(idx, 1);
+      return next;
+    });
+  }, []);
+
+  // ─── Economy ───────────────────────────────────────────────
+
+  const addGold = useCallback((amount: number) => {
+    setGold((prev) => prev + amount);
+  }, []);
+
+  const spendGold = useCallback((amount: number): boolean => {
+    let success = false;
+    setGold((prev) => {
+      if (prev >= amount) { success = true; return prev - amount; }
+      return prev;
+    });
+    return success;
+  }, []);
+
+  const addShards = useCallback((amount: number) => {
+    setShards((prev) => prev + amount);
+  }, []);
+
+  const spendShards = useCallback((amount: number): boolean => {
+    let success = false;
+    setShards((prev) => {
+      if (prev >= amount) { success = true; return prev - amount; }
+      return prev;
+    });
+    return success;
+  }, []);
+
+  // ─── Stations ──────────────────────────────────────────────
+
+  const upgradeStation = useCallback((stationId: keyof StationLevels): boolean => {
+    const currentLevel = stationLevels[stationId];
+    const cost = getStationUpgradeCost(stationId, currentLevel);
+    if (gold < cost) return false;
+
+    const cfg = stationsConfig[stationId];
+    if (!cfg || currentLevel >= cfg.maxLevel) return false;
+
+    setGold((prev) => prev - cost);
+    setStationLevels((prev) => ({
+      ...prev,
+      [stationId]: prev[stationId] + 1,
+    }));
+    return true;
+  }, [gold, stationLevels]);
+
   return (
     <GameStateContext.Provider
       value={{
@@ -162,6 +298,20 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
         removeRule,
         moveRule,
         setAiRules,
+        ownedCardIds,
+        ownedCards,
+        addOwnedCard,
+        addOwnedCards,
+        removeOwnedCard,
+        gold,
+        shards,
+        addGold,
+        spendGold,
+        addShards,
+        spendShards,
+        stationLevels,
+        upgradeStation,
+        libraryCapacity,
       }}
     >
       {children}

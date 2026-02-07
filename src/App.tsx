@@ -6,6 +6,7 @@ import { BattleScreen } from './components/BattleScreen';
 import { DeckBuilder } from './components/DeckBuilder';
 import { AIEditor } from './components/AIEditor';
 import { DungeonScreen } from './components/dungeon/DungeonScreen';
+import { WorkshopScreen } from './components/workshop/WorkshopScreen';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <div className="flex-1 flex flex-col overflow-hidden">
               <Routes>
                 <Route path="/dungeon" element={<DungeonScreen />} />
+                <Route path="/workshop" element={<WorkshopScreen />} />
                 <Route path="/battle" element={<BattleScreen />} />
                 <Route path="/deck" element={<DeckBuilder />} />
                 <Route path="/ai" element={<AIEditor />} />

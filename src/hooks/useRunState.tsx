@@ -88,7 +88,7 @@ const RunStateContext = createContext<RunStateContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────
 
 export function RunStateProvider({ children }: { children: ReactNode }) {
-  const { deckCardIds, aiRules } = useGameState();
+  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard } = useGameState();
   const [run, setRun] = useState<RunState | null>(null);
 
   // Transient state for shop/chest (not persisted in run)
@@ -215,6 +215,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   // ─── Reward handling ────────────────────────────────────
 
   const pickRewardCard = useCallback((card: Card) => {
+    addOwnedCard(card.id);
     setRun((prev) => {
       if (!prev || !prev.pendingReward) return prev;
       const isBoss = findNode(prev.map, prev.currentNodeId ?? '')?.type === 'boss';
@@ -224,7 +225,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
         pendingReward: null,
       }, isBoss);
     });
-  }, []);
+  }, [addOwnedCard]);
 
   const skipReward = useCallback(() => {
     setRun((prev) => {
@@ -601,10 +602,14 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   }, [run]);
 
   const returnToMap = useCallback(() => {
+    // Transfer earned gold to persistent state
+    if (run) {
+      addPersistentGold(run.goldEarned);
+    }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, []);
+  }, [run, addPersistentGold]);
 
   return (
     <RunStateContext.Provider
