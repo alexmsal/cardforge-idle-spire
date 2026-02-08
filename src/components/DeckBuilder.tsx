@@ -270,7 +270,7 @@ export function DeckBuilder() {
                 <span><span className="text-purple-400">{'\u25CF'}</span> RCT {stats.types.reaction}</span>
               </div>
             </div>
-            {/* Archetype stats hidden — archetype bonuses are not yet functional */}
+            {/* TODO: Archetypes — show when synergy bonuses are implemented */}
           </div>
         </div>
 
