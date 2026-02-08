@@ -120,14 +120,12 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
               >
                 Reset Tutorial
               </button>
-              {/* TODO: Future settings to implement:
-                - Battle speed: 0.5x / 1x / 2x / 5x / Skip
-                - Auto-battle toggle
-                - Sound on/off (when audio is added)
-                - Theme: dark/light
-                - Export/Import save (JSON download/upload)
-                - Difficulty modifier
-              */}
+              {/* // TODO: Battle speed selector (0.5x / 1x / 2x / 5x / Skip) */}
+              {/* // TODO: Auto-battle toggle */}
+              {/* // TODO: Sound on/off (when audio is added) */}
+              {/* // TODO: Theme: dark/light */}
+              {/* // TODO: Export/Import save (JSON download/upload) */}
+              {/* // TODO: Difficulty modifier */}
             </div>
           </>
         )}

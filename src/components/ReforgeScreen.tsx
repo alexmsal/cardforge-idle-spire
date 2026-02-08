@@ -236,6 +236,7 @@ interface OverviewTabProps {
 
 function OverviewTab({ prestigeLevel, maxFloorReached, economyStats, foilGain, foil, onStartReforge }: OverviewTabProps) {
   const canReforge = economyStats.totalBossKills > 0;
+  const [showFormula, setShowFormula] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -277,9 +278,22 @@ function OverviewTab({ prestigeLevel, maxFloorReached, economyStats, foilGain, f
             <p className="text-[10px] text-gray-500">After Reforge</p>
           </div>
         </div>
-        <p className="text-[10px] text-gray-600 text-center">
-          Formula: floor(max_floor^1.5 x (1 + boss_kills x 0.3))
+        <p className="text-[10px] text-gray-500 text-center">
+          Foil earned scales with your highest floor reached and boss kills.
         </p>
+        <div className="text-center mt-1">
+          <button
+            onClick={() => setShowFormula((p) => !p)}
+            className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+          >
+            {showFormula ? 'Hide formula' : 'Show formula'}
+          </button>
+          {showFormula && (
+            <p className="text-[10px] text-gray-600 font-mono mt-1">
+              floor(max_floor^1.5 {'\u00D7'} (1 + boss_kills {'\u00D7'} 0.3))
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Reforge button */}
