@@ -1,6 +1,7 @@
 import type { EnemyInstance, EnemyPatternEntry } from '../models';
 import { HpBar } from './HpBar';
 import { StatusBadges } from './StatusBadges';
+import { Tooltip } from './Tooltip';
 
 interface EnemyDisplayProps {
   enemy: EnemyInstance;
@@ -144,13 +145,15 @@ export function EnemyDisplay({ enemy }: EnemyDisplayProps) {
 
       {/* Intent */}
       {!isDead && intent && (
-        <div className="mt-2 px-2 py-1 bg-gray-900/60 rounded border border-gray-700/50">
-          <p className="text-[8px] text-gray-500 uppercase tracking-wider text-center mb-0.5">Intent</p>
-          <div className="flex justify-center">
-            <IntentIcon intent={intent} />
+        <Tooltip text="Shows what the enemy will do next turn. Plan your defense accordingly!" position="left">
+          <div className="mt-2 px-2 py-1 bg-gray-900/60 rounded border border-gray-700/50 cursor-help">
+            <p className="text-[8px] text-gray-500 uppercase tracking-wider text-center mb-0.5">Intent</p>
+            <div className="flex justify-center">
+              <IntentIcon intent={intent} />
+            </div>
+            <p className="text-[9px] text-gray-400 text-center mt-0.5">{intent.display}</p>
           </div>
-          <p className="text-[9px] text-gray-400 text-center mt-0.5">{intent.display}</p>
-        </div>
+        </Tooltip>
       )}
     </div>
   );

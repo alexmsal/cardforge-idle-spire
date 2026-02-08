@@ -7,21 +7,26 @@ import { AIDecisionLog } from '../AIDecisionLog';
 import { BattleControls } from '../BattleControls';
 import type { Card, EnemyDef, AIRule, BattleSummary } from '../../models';
 import { getCardById } from '../../data/gameData';
+import { useGameState, getEffectiveHandSize } from '../../hooks/useGameState';
 
 interface DungeonBattleProps {
   deckCardIds: string[];
   aiRules: AIRule[];
   enemyDefs: EnemyDef[];
+  playerMaxHp: number;
+  playerCurrentHp: number;
   onBattleComplete: (summary: BattleSummary) => void;
 }
 
-export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, onBattleComplete }: DungeonBattleProps) {
+export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, playerMaxHp, playerCurrentHp, onBattleComplete }: DungeonBattleProps) {
+  const { foilUpgrades } = useGameState();
   const deckCards: Card[] = useMemo(
     () => deckCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined),
     [deckCardIds],
   );
 
   const enemyDefsMemo = useMemo(() => enemyDefs, [enemyDefs]);
+  const handSize = getEffectiveHandSize(foilUpgrades);
   const [battleStarted, setBattleStarted] = useState(false);
 
   const {
@@ -34,7 +39,7 @@ export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, onBattleComplet
     resume,
     step,
     changeSpeed,
-  } = useBattleSimulation(deckCards, aiRules, enemyDefsMemo);
+  } = useBattleSimulation(deckCards, aiRules, enemyDefsMemo, playerMaxHp, playerCurrentHp, handSize);
 
   const logEndRef = useRef<HTMLDivElement>(null);
 
