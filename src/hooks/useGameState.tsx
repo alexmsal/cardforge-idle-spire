@@ -54,10 +54,17 @@ export interface StationLevels {
 
 const DEFAULT_STATIONS: StationLevels = { anvil: 1, library: 1, portal: 1 };
 
+// Early upgrade costs are gentle so players unlock something after 1 run
+const EARLY_TIER_COSTS = [150, 250, 400];
+
 export function getStationUpgradeCost(stationId: keyof StationLevels, currentLevel: number): number {
   const cfg = stationsConfig[stationId];
   if (!cfg) return Infinity;
   if (currentLevel >= cfg.maxLevel) return Infinity;
+  // Use fixed tiers for the first 3 levels, then formula for higher levels
+  if (currentLevel <= EARLY_TIER_COSTS.length) {
+    return EARLY_TIER_COSTS[currentLevel - 1];
+  }
   return Math.floor(cfg.baseCost * Math.pow(currentLevel, cfg.costExponent));
 }
 
