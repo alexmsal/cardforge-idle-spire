@@ -10,6 +10,7 @@ import { DungeonShopScreen } from './DungeonShopScreen';
 import { DungeonRestScreen } from './DungeonRestScreen';
 import { DungeonChestScreen } from './DungeonChestScreen';
 import { CardRemoveScreen } from './CardRemoveScreen';
+import { CardUpgradeScreen } from './CardUpgradeScreen';
 import { RunSummaryScreen } from './RunSummaryScreen';
 import type { BattleSummary, EnemyDef } from '../../models';
 import { gameEvents } from '../../data/gameData';
@@ -236,11 +237,11 @@ export function DungeonScreen() {
         />
       )}
 
-      {/* Card upgrade (simplified) */}
+      {/* Card upgrade */}
       {run.phase === 'card_upgrade' && (
-        <CardRemoveScreen
+        <CardUpgradeScreen
           deckCardIds={run.deckCardIds}
-          onRemove={upgradeCard}
+          onUpgrade={upgradeCard}
           onCancel={cancelCardAction}
         />
       )}

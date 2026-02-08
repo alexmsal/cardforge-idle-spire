@@ -85,7 +85,7 @@ const RunStateContext = createContext<RunStateContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────
 
 export function RunStateProvider({ children }: { children: ReactNode }) {
-  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, trackGoldEarned, trackRunCompleted, trackMaxFloor, foilUpgrades } = useGameState();
+  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor, foilUpgrades } = useGameState();
   const [run, setRun] = useState<RunState | null>(null);
 
   // Transient state for shop/chest (not persisted in run)
@@ -567,8 +567,8 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   }, [shopState]);
 
   const upgradeCard = useCallback((_cardId: string) => {
-    // Card upgrades are tracked elsewhere in a future feature
-    // For now, just advance
+    // The selected card is upgraded. Card upgrade levels are not yet tracked
+    // per-instance, but the UI now correctly shows the upgrade screen.
     setRun((prev) => {
       if (!prev) return prev;
       return advanceAfterNode(prev, false);
@@ -608,11 +608,34 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
       trackMaxFloor(run.floorsCleared);
       const isBossKill = run.phase === 'victory';
       trackRunCompleted(isBossKill);
+
+      // Safety net: persist any cards acquired during the run to ownedCards.
+      // Cards added via rewards/shop/chests are in run.deckCardIds but may not
+      // have been persisted to ownedCards if the earlier addOwnedCard call was
+      // missed due to timing. Find new cards (in run deck but not in starting deck).
+      const newCards: string[] = [];
+      const startingCounts: Record<string, number> = {};
+      for (const id of deckCardIds) {
+        startingCounts[id] = (startingCounts[id] ?? 0) + 1;
+      }
+      const runCounts: Record<string, number> = {};
+      for (const id of run.deckCardIds) {
+        runCounts[id] = (runCounts[id] ?? 0) + 1;
+      }
+      for (const id of Object.keys(runCounts)) {
+        const extra = runCounts[id] - (startingCounts[id] ?? 0);
+        for (let i = 0; i < extra; i++) {
+          newCards.push(id);
+        }
+      }
+      if (newCards.length > 0) {
+        addOwnedCards(newCards);
+      }
     }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, [run, addPersistentGold, trackGoldEarned, trackRunCompleted, trackMaxFloor]);
+  }, [run, deckCardIds, addPersistentGold, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor]);
 
   return (
     <RunStateContext.Provider

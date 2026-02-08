@@ -164,14 +164,24 @@ export function AIEditor() {
   const dragFrom = useRef<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  // Unique cards in deck for dropdown
+  // Unique cards in deck for dropdown — pull dynamically from current deck IDs
+  // to ensure ALL cards in the active deck appear, even if card data is stale
   const cardOptions = (() => {
     const seen = new Set<string>();
     const options: { id: string; name: string }[] = [];
+    // Primary: use resolved Card objects from the deck
     for (const card of deckCards) {
       if (!seen.has(card.id)) {
         seen.add(card.id);
         options.push({ id: card.id, name: card.name });
+      }
+    }
+    // Safety net: catch any deck IDs that didn't resolve via getCardById
+    for (const id of deckCardIds) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        // Format the raw ID as a readable name
+        options.push({ id, name: id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
       }
     }
     return options.sort((a, b) => a.name.localeCompare(b.name));
