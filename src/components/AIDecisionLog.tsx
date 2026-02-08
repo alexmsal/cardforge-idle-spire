@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import type { CombatLogEntry } from '../models';
 
 interface AIDecisionLogProps {
@@ -18,6 +19,16 @@ const PHASE_ICON: Record<string, string> = {
 };
 
 export function AIDecisionLog({ log, currentTurn }: AIDecisionLogProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new log entries arrive
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [log.length]);
+
   // Group entries by turn
   const turnGroups: { turn: number; entries: CombatLogEntry[] }[] = [];
   for (const entry of log) {
@@ -30,11 +41,14 @@ export function AIDecisionLog({ log, currentTurn }: AIDecisionLogProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-3 py-2 border-b border-gray-700 flex-shrink-0">
         Combat Log
       </h3>
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scrollbar-thin">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scrollbar-thin min-h-0"
+      >
         {turnGroups.map((group) => (
           <div key={group.turn}>
             <div className={`text-[10px] font-bold uppercase tracking-wider mb-0.5
@@ -55,6 +69,7 @@ export function AIDecisionLog({ log, currentTurn }: AIDecisionLogProps) {
         {log.length === 0 && (
           <p className="text-xs text-gray-600 italic">Waiting for battle to start...</p>
         )}
+        <div ref={bottomRef} />
       </div>
     </div>
   );
