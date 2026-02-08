@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Card } from '../models';
+import { getKeywordDescription } from './Tooltip';
 
 const RARITY_BORDER: Record<string, string> = {
   common: 'border-gray-500',
@@ -54,11 +55,15 @@ export function CardTooltip({ card, children }: CardTooltipProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const handleEnter = (e: React.MouseEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    // Position to the right if space, otherwise left
-    const spaceRight = window.innerWidth - rect.right;
-    const x = spaceRight > 280 ? rect.right + 8 : rect.left - 268;
+  const handleEnter = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Show tooltip to the right if card is in the left half of viewport, otherwise left
+    const cardCenterX = rect.left + rect.width / 2;
+    const x = cardCenterX < window.innerWidth / 2
+      ? rect.right + 8
+      : rect.left - 268;
     const y = Math.min(rect.top, window.innerHeight - 300);
     setPos({ x, y });
     timerRef.current = setTimeout(() => setShow(true), 300);
@@ -75,7 +80,7 @@ export function CardTooltip({ card, children }: CardTooltipProps) {
   const typeColor = TYPE_COLOR[card.type] ?? 'text-gray-400';
 
   return (
-    <div ref={wrapRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave} className="contents">
+    <div ref={wrapRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       {children}
       {show && (
         <div
@@ -99,10 +104,16 @@ export function CardTooltip({ card, children }: CardTooltipProps) {
 
           {/* Keywords */}
           {card.keywords.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {card.keywords.map((kw) => (
-                <span key={kw} className="text-[9px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">{kw}</span>
-              ))}
+            <div className="mb-2 space-y-1">
+              {card.keywords.map((kw) => {
+                const desc = getKeywordDescription(kw);
+                return (
+                  <div key={kw}>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">{kw}</span>
+                    {desc && <p className="text-[9px] text-gray-500 mt-0.5 leading-snug">{desc}</p>}
+                  </div>
+                );
+              })}
             </div>
           )}
 

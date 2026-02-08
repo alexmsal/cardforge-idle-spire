@@ -81,7 +81,7 @@ export function ReforgeScreen() {
             Prestige {toRoman(prestigeLevel)}
           </span>
         )}
-        <div className="flex items-center gap-1.5" title="Foil — earned by Reforging. Spent on permanent upgrades in the Foil Shop.">
+        <div className="flex items-center gap-1.5" title="Foil — earned from Reforging, spent on permanent upgrades">
           <span className="text-amber-400 text-sm">{'\u2B50'}</span>
           <span className="font-mono text-amber-300 text-sm">{foil} Foil</span>
         </div>
