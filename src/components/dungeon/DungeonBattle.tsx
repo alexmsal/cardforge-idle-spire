@@ -156,7 +156,6 @@ export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, playerMaxHp, pl
 
   const enemyDefsMemo = useMemo(() => enemyDefs, [enemyDefs]);
   const handSize = getEffectiveHandSize(foilUpgrades);
-  const [battleStarted, setBattleStarted] = useState(false);
 
   // Track action feed
   const [actionFeed, setActionFeed] = useState<ActionFeedEntry[]>([]);
@@ -181,14 +180,16 @@ export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, playerMaxHp, pl
     changeSpeed,
   } = useBattleSimulation(deckCards, aiRules, enemyDefsMemo, playerMaxHp, playerCurrentHp, handSize);
 
-  // Auto-start battle on mount
+  // Keep a ref to startBattle so the auto-start effect doesn't depend on its identity
+  const startBattleRef = useRef(startBattle);
+  startBattleRef.current = startBattle;
+
+  // Auto-start battle on mount — use empty deps + ref to avoid cleanup cancelling the timer
   useEffect(() => {
-    if (!battleStarted) {
-      setBattleStarted(true);
-      const t = setTimeout(() => startBattle(), 100);
-      return () => clearTimeout(t);
-    }
-  }, [battleStarted, startBattle]);
+    const t = setTimeout(() => startBattleRef.current(), 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Track new log entries for the action feed
   useEffect(() => {
@@ -237,13 +238,20 @@ export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, playerMaxHp, pl
     }
   }, [snapshot]);
 
+  // Keep stable refs for callbacks to avoid effect re-fires
+  const onBattleCompleteRef = useRef(onBattleComplete);
+  onBattleCompleteRef.current = onBattleComplete;
+  const summaryRef = useRef(summary);
+  summaryRef.current = summary;
+
   // When battle finishes, notify parent after a delay to show summary
   useEffect(() => {
-    if (simState === 'finished' && summary) {
-      const t = setTimeout(() => onBattleComplete(summary), 3000);
+    if (simState === 'finished' && summaryRef.current) {
+      const s = summaryRef.current;
+      const t = setTimeout(() => onBattleCompleteRef.current(s), 3000);
       return () => clearTimeout(t);
     }
-  }, [simState, summary, onBattleComplete]);
+  }, [simState]);
 
   const state = snapshot?.state;
 
@@ -383,8 +391,8 @@ export function DungeonBattle({ deckCardIds, aiRules, enemyDefs, playerMaxHp, pl
           )}
         </div>
 
-        {/* Log sidebar - fixed height, doesn't push content */}
-        <aside className="w-72 border-l border-gray-800 bg-gray-900/50 flex flex-col min-h-0 overflow-hidden flex-shrink-0">
+        {/* Log sidebar - constrained height so it never pushes the battle arena */}
+        <aside className="w-72 border-l border-gray-800 bg-gray-900/50 flex flex-col flex-shrink-0" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <AIDecisionLog
             log={state?.log ?? []}
             currentTurn={state?.turn ?? 0}

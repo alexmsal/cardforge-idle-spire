@@ -78,6 +78,10 @@ interface RunStateContextType {
   // Summary
   getRunSummary: () => RunSummary | null;
   returnToMap: () => void;
+
+  // New cards acquired during the last completed run
+  newCardsFromRun: string[];
+  dismissNewCards: () => void;
 }
 
 const RunStateContext = createContext<RunStateContextType | null>(null);
@@ -91,6 +95,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   // Transient state for shop/chest (not persisted in run)
   const [shopState, setShopState] = useState<ShopState | null>(null);
   const [chestReward, setChestReward] = useState<ChestReward | null>(null);
+  const [newCardsFromRun, setNewCardsFromRun] = useState<string[]>([]);
 
   const isRunActive = run !== null && run.phase !== 'victory' && run.phase !== 'defeat';
 
@@ -631,11 +636,16 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
       if (newCards.length > 0) {
         addOwnedCards(newCards);
       }
+      setNewCardsFromRun(newCards);
     }
     setRun(null);
     setShopState(null);
     setChestReward(null);
   }, [run, deckCardIds, addPersistentGold, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor]);
+
+  const dismissNewCards = useCallback(() => {
+    setNewCardsFromRun([]);
+  }, []);
 
   return (
     <RunStateContext.Provider
@@ -665,6 +675,8 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
         upgradeCard,
         getRunSummary,
         returnToMap,
+        newCardsFromRun,
+        dismissNewCards,
       }}
     >
       {children}
