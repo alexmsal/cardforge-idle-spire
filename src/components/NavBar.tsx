@@ -62,21 +62,29 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
         </NavLink>
       ))}
       {/* Reforge tab */}
-      <NavLink
-        to="/reforge"
-        className={({ isActive }) =>
-          `px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${
-            !reforgeUnlocked
-              ? 'text-gray-700 border-transparent cursor-not-allowed pointer-events-none'
-              : isActive
+      {reforgeUnlocked ? (
+        <NavLink
+          to="/reforge"
+          className={({ isActive }) =>
+            `px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+              isActive
                 ? 'text-amber-300 border-amber-500'
                 : 'text-gray-500 border-transparent hover:text-amber-300 hover:border-amber-600'
-          }`
-        }
-      >
-        <span className="mr-1.5">{'\u2728'}</span>
-        Reforge
-      </NavLink>
+            }`
+          }
+        >
+          <span className="mr-1.5">{'\u2728'}</span>
+          Reforge
+        </NavLink>
+      ) : (
+        <span
+          className="px-4 py-2.5 text-sm font-medium text-gray-700 border-b-2 border-transparent cursor-not-allowed"
+          title={`Locked \u2014 Defeat the Crypt Lord (Boss kills: ${economyStats.totalBossKills}/1)`}
+        >
+          <span className="mr-1.5">{'\u2728'}</span>
+          Reforge
+        </span>
+      )}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -112,6 +120,14 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
               >
                 Reset Tutorial
               </button>
+              {/* TODO: Future settings to implement:
+                - Battle speed: 0.5x / 1x / 2x / 5x / Skip
+                - Auto-battle toggle
+                - Sound on/off (when audio is added)
+                - Theme: dark/light
+                - Export/Import save (JSON download/upload)
+                - Difficulty modifier
+              */}
             </div>
           </>
         )}
