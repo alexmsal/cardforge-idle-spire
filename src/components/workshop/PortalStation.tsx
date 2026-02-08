@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRunState } from '../../hooks/useRunState';
 import { useGameState } from '../../hooks/useGameState';
-import { idleConfig, getCardById } from '../../data/gameData';
+import { idleConfig, getCardById, generatorCards } from '../../data/gameData';
+import { HelpTip } from '../Tooltip';
 import { getGeneratorInfo, getGeneratorRates } from '../../engine/IdleEngine';
 
 interface PortalStationProps {
@@ -138,9 +139,12 @@ export function PortalStation({ onBack }: PortalStationProps) {
           {/* Generators panel */}
           <div className="bg-gray-900 border border-cyan-800/50 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-cyan-300" title="Generators produce Gold and Shards while you're away. Install generator cards here to start earning idle resources.">
+              <h3 className="text-lg font-bold text-cyan-300 flex items-center gap-1.5">
                 {'\u2699\uFE0F'} Generators
-                <span className="text-gray-600 text-xs ml-1.5 cursor-help" title="Generators produce Gold and Shards while you're away. Find them through crafting at the Anvil or rare dungeon drops.">?</span>
+                <HelpTip
+                  text="Generators are special cards that produce resources passively while you're away. They're the core of idle progression — the more generators you have, the faster you earn resources offline."
+                  position="bottom"
+                />
               </h3>
               {(rates.goldPerMin > 0 || rates.shardsPerMin > 0) && (
                 <div className="flex items-center gap-3 text-xs">
@@ -155,17 +159,45 @@ export function PortalStation({ onBack }: PortalStationProps) {
             </div>
 
             {generators.length === 0 && availableGenerators.length === 0 && (
-              <div className="bg-gray-800/40 border border-dashed border-cyan-900/50 rounded-lg p-4 text-center space-y-2">
-                <p className="text-sm text-gray-500">No generators installed yet</p>
-                <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 opacity-60">
-                  <p className="text-xs text-cyan-400 font-medium">Rusty Automaton</p>
-                  <p className="text-[10px] text-gray-500">Generates 1 G/min while idle</p>
-                  <span className="text-[9px] text-gray-600 bg-gray-900 px-2 py-0.5 rounded mt-1 inline-block">
-                    Locked — craft at the Anvil (requires Anvil Lv2) or find in dungeon chests
-                  </span>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 text-center">No generators owned yet</p>
+                <div className="grid gap-2">
+                  {generatorCards.map((card) => {
+                    const goldEff = card.effects.find((e) => e.type === 'generate_gold');
+                    const shardEff = card.effects.find((e) => e.type === 'generate_shards');
+                    const rateParts: string[] = [];
+                    if (goldEff) rateParts.push(`${goldEff.value} Gold/min`);
+                    if (shardEff) rateParts.push(`${shardEff.value} Shard/min`);
+
+                    return (
+                      <div
+                        key={card.id}
+                        className="bg-gray-800/40 border border-gray-700/60 rounded-lg p-3 flex items-center gap-3 opacity-50"
+                      >
+                        <span className="text-xl text-gray-600 w-8 text-center flex-shrink-0">{'\uD83D\uDD12'}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-400">{card.name}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded capitalize ${
+                              card.rarity === 'rare' ? 'bg-amber-900/40 text-amber-500'
+                                : card.rarity === 'uncommon' ? 'bg-blue-900/40 text-blue-400'
+                                : 'bg-gray-700/60 text-gray-500'
+                            }`}>
+                              {card.rarity}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 mt-0.5">
+                            Generates {rateParts.join(' + ')} while idle
+                          </p>
+                          <p className="text-[9px] text-gray-600 mt-0.5">
+                            {'\uD83D\uDD13'} Craft at Anvil (Lv2) or find in dungeon chests
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p className="text-[10px] text-gray-600 leading-relaxed">
-                  Generators are the core of idle progression. They produce Gold and Shards while you&apos;re offline.
+                <p className="text-[10px] text-gray-600 text-center leading-relaxed">
                   Upgrade the Anvil to Lv2 to unlock crafting, or find rare generator cards in dungeon chests.
                 </p>
               </div>
