@@ -1,4 +1,5 @@
 import type { CardInstance } from '../models';
+import { KeywordTooltip } from './Tooltip';
 
 interface CardDisplayProps {
   cardInstance: CardInstance;
@@ -91,16 +92,20 @@ export function CardDisplay({ cardInstance, isPlaying }: CardDisplayProps) {
       {card.keywords.length > 0 && (
         <div className="flex flex-wrap gap-0.5 mt-auto">
           {card.keywords.map((kw) => (
-            <span key={kw} className="text-[8px] px-1 py-0 rounded bg-gray-700 text-gray-400">{kw}</span>
+            <KeywordTooltip key={kw} keyword={kw}>
+              <span className="text-[8px] px-1 py-0 rounded bg-gray-700 text-gray-400 cursor-help">{kw}</span>
+            </KeywordTooltip>
           ))}
         </div>
       )}
 
       {/* Exhaust indicator */}
       {card.exhaust && (
-        <span className="absolute -bottom-1 -right-1 text-[8px] px-1 rounded bg-red-900 text-red-300 border border-red-700">
-          exhaust
-        </span>
+        <KeywordTooltip keyword="exhaust">
+          <span className="absolute -bottom-1 -right-1 text-[8px] px-1 rounded bg-red-900 text-red-300 border border-red-700 cursor-help">
+            exhaust
+          </span>
+        </KeywordTooltip>
       )}
     </div>
   );

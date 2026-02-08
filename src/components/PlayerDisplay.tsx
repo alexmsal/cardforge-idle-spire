@@ -1,6 +1,7 @@
 import type { PlayerState } from '../models';
 import { HpBar } from './HpBar';
 import { StatusBadges } from './StatusBadges';
+import { Tooltip } from './Tooltip';
 
 interface PlayerDisplayProps {
   player: PlayerState;
@@ -59,18 +60,22 @@ export function PlayerDisplay({ player }: PlayerDisplayProps) {
       <div className="flex items-center justify-between w-full gap-4">
         {/* Energy */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 uppercase tracking-wider">Energy</span>
+          <Tooltip text="Resets to 3 each turn. Cards cost energy to play." position="bottom">
+            <span className="text-xs text-gray-400 uppercase tracking-wider cursor-help">Energy</span>
+          </Tooltip>
           <EnergyPips current={player.energy} max={player.maxEnergy} />
         </div>
 
         {/* Block */}
         {player.block > 0 && (
-          <div className="flex items-center gap-1 px-2 py-1 bg-sky-900/40 rounded border border-sky-800/50">
-            <svg className="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
-            </svg>
-            <span className="text-sm font-bold text-sky-400">{player.block}</span>
-          </div>
+          <Tooltip text="Absorbs incoming damage. Decays at the start of your turn." position="bottom">
+            <div className="flex items-center gap-1 px-2 py-1 bg-sky-900/40 rounded border border-sky-800/50 cursor-help">
+              <svg className="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+              </svg>
+              <span className="text-sm font-bold text-sky-400">{player.block}</span>
+            </div>
+          </Tooltip>
         )}
       </div>
 

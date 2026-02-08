@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useGameState } from '../hooks/useGameState';
 
@@ -23,9 +24,14 @@ const links = [
   { to: '/ai', label: 'AI Rules', icon: '\uD83E\uDDE0' },
 ];
 
-export function NavBar() {
+interface NavBarProps {
+  onResetTutorial?: () => void;
+}
+
+export function NavBar({ onResetTutorial }: NavBarProps) {
   const { economyStats, prestigeLevel } = useGameState();
   const reforgeUnlocked = economyStats.totalBossKills > 0 || prestigeLevel > 0;
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <nav className="bg-gray-950 border-b border-gray-800 px-6 py-0 flex items-center gap-1">
@@ -69,6 +75,36 @@ export function NavBar() {
         <span className="mr-1.5">{'\u2728'}</span>
         Reforge
       </NavLink>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Settings gear */}
+      <div className="relative">
+        <button
+          onClick={() => setShowSettings((prev) => !prev)}
+          className="px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors text-sm"
+          title="Settings"
+        >
+          {'\u2699\uFE0F'}
+        </button>
+        {showSettings && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
+            <div className="absolute right-0 top-full mt-1 z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 min-w-[160px]">
+              <button
+                onClick={() => {
+                  onResetTutorial?.();
+                  setShowSettings(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              >
+                Reset Tutorial
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
