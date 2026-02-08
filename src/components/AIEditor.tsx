@@ -43,6 +43,7 @@ interface RuleRowProps {
 }
 
 function RuleRow({ rule, index, cardOptions, onUpdate, onRemove, onDragStart, onDragOver, onDragEnd, isDragTarget }: RuleRowProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isAlways = rule.condition.parameter === 'always';
 
   const updateCondition = (partial: Partial<AICondition>) => {
@@ -82,13 +83,31 @@ function RuleRow({ rule, index, cardOptions, onUpdate, onRemove, onDragStart, on
         <p className="text-xs text-gray-400 flex-1 truncate">
           {preview} {'\u2192'} Play <span className="text-white font-medium">{cardName}</span> {'\u2192'} TARGET <span className="text-blue-400">{targetLabel}</span>
         </p>
-        <button
-          onClick={() => onRemove(index)}
-          className="text-gray-600 hover:text-red-400 transition-colors text-sm p-1"
-          title="Delete rule"
-        >
-          {'\uD83D\uDDD1'}
-        </button>
+        {!confirmDelete ? (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="text-gray-600 hover:text-red-400 transition-colors text-sm p-1"
+            title="Delete rule"
+          >
+            {'\uD83D\uDDD1'}
+          </button>
+        ) : (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-red-400">Delete?</span>
+            <button
+              onClick={() => onRemove(index)}
+              className="px-1.5 py-0.5 text-[10px] bg-red-700 hover:bg-red-600 text-white rounded transition-colors"
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="px-1.5 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+            >
+              No
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Edit row */}

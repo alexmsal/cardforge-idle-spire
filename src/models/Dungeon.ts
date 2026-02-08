@@ -115,6 +115,7 @@ export interface ShopItem {
   card: Card;
   price: number;
   sold: boolean;
+  isBargain?: boolean;
 }
 
 export interface ShopState {
@@ -138,6 +139,7 @@ export interface RunSummary {
   battlesWon: number;
   elitesSlain: number;
   goldEarned: number;
+  firstRunBonus: number;
   finalHp: number;
   maxHp: number;
   deckSize: number;

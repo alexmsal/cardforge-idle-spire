@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { RunState } from '../../models/Dungeon';
 
 interface RunHUDProps {
@@ -6,6 +7,7 @@ interface RunHUDProps {
 }
 
 export function RunHUD({ run, onAbandon }: RunHUDProps) {
+  const [showConfirm, setShowConfirm] = useState(false);
   const hpPercent = Math.max(0, (run.hp / run.maxHp) * 100);
   const hpColor = hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500';
 
@@ -27,7 +29,7 @@ export function RunHUD({ run, onAbandon }: RunHUDProps) {
       </div>
 
       {/* Gold */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" title="Gold earned this run">
         <span className="text-yellow-500">G</span>
         <span className="font-mono text-yellow-300">{run.gold}</span>
       </div>
@@ -41,14 +43,32 @@ export function RunHUD({ run, onAbandon }: RunHUDProps) {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Abandon */}
-      <button
-        onClick={onAbandon}
-        className="text-gray-600 hover:text-red-400 transition-colors"
-        title="Abandon Run"
-      >
-        Abandon Run
-      </button>
+      {/* Abandon with confirmation */}
+      {!showConfirm ? (
+        <button
+          onClick={() => setShowConfirm(true)}
+          className="text-gray-600 hover:text-red-400 transition-colors"
+          title="Abandon Run"
+        >
+          Abandon Run
+        </button>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-red-400 text-[10px]">Abandon? Progress will be lost.</span>
+          <button
+            onClick={() => { setShowConfirm(false); onAbandon(); }}
+            className="px-2 py-0.5 text-[10px] bg-red-700 hover:bg-red-600 text-white rounded transition-colors"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setShowConfirm(false)}
+            className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+          >
+            No
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -348,21 +348,21 @@
     "stations": {
       "anvil": {
         "name": "Anvil",
-        "baseCost": 500,
+        "baseCost": 150,
         "costExponent": 1.8,
         "maxLevel": 10,
         "perLevel": "Unlocks crafting recipes and reduces shard costs"
       },
       "library": {
         "name": "Library",
-        "baseCost": 500,
+        "baseCost": 150,
         "costExponent": 1.8,
         "maxLevel": 10,
         "perLevel": "Increases deck max size by 2 (12 → 30)"
       },
       "portal": {
         "name": "Portal",
-        "baseCost": 500,
+        "baseCost": 150,
         "costExponent": 1.8,
         "maxLevel": 5,
         "perLevel": "Unlocks speed multipliers and dungeon selection"

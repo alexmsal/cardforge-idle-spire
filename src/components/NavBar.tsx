@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useGameState } from '../hooks/useGameState';
+import { CurrencyGuide } from './CurrencyGuide';
 
 function toRoman(n: number): string {
   if (n <= 0) return '';
@@ -32,6 +33,7 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
   const { economyStats, prestigeLevel } = useGameState();
   const reforgeUnlocked = economyStats.totalBossKills > 0 || prestigeLevel > 0;
   const [showSettings, setShowSettings] = useState(false);
+  const [showCurrencyGuide, setShowCurrencyGuide] = useState(false);
 
   return (
     <nav className="bg-gray-950 border-b border-gray-800 px-6 py-0 flex items-center gap-1">
@@ -94,6 +96,15 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
             <div className="absolute right-0 top-full mt-1 z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 min-w-[160px]">
               <button
                 onClick={() => {
+                  setShowCurrencyGuide(true);
+                  setShowSettings(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              >
+                Currency Guide
+              </button>
+              <button
+                onClick={() => {
                   onResetTutorial?.();
                   setShowSettings(false);
                 }}
@@ -105,6 +116,8 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
           </>
         )}
       </div>
+
+      {showCurrencyGuide && <CurrencyGuide onClose={() => setShowCurrencyGuide(false)} />}
     </nav>
   );
 }
