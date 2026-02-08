@@ -23,15 +23,22 @@ function formatEffect(e: { type: string; value: number | boolean; target: string
     case 'heal': return `Heal ${val} HP`;
     case 'poison': return `Apply ${val} Poison`;
     case 'poison_aoe': return `${val} Poison to ALL`;
+    case 'poison_multiply': return `Multiply Poison x${val}`;
+    case 'poison_self': return `Apply ${val} Poison to self`;
     case 'weakness': return `Apply ${val} Weakness`;
     case 'vulnerability': return `Apply ${val} Vulnerability`;
+    case 'vulnerability_self': return `Gain ${val} Vulnerability`;
     case 'str': return `+${val} STR`;
+    case 'str_per_turn': return `+${val} STR/turn`;
     case 'dex': return `+${val} DEX`;
     case 'thorn': return `+${val} Thorn`;
     case 'energy': return `+${val} energy`;
     case 'draw': return `Draw ${val}`;
     case 'damage_self': return `${val} self-damage`;
     case 'damage_ramp': return `+${val} dmg/play`;
+    case 'damage_on_hit': return `${val} retaliation`;
+    case 'block_retain': return 'Retain Block';
+    case 'corpse_explode': return 'Corpse Explode';
     default: return `${e.type}: ${val}`;
   }
 }

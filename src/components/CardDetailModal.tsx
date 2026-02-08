@@ -53,6 +53,35 @@ function formatEffectDetail(e: { type: string; value: number | boolean; target: 
   return text;
 }
 
+function formatUpgradeStat(key: string, value: unknown): string {
+  const v = value;
+  switch (key) {
+    case 'damage': return `damage: ${v}`;
+    case 'damage_aoe': return `AoE damage: ${v}`;
+    case 'block': return `block: ${v}`;
+    case 'heal': return `heal: ${v}`;
+    case 'poison': return `poison: ${v}`;
+    case 'poison_aoe': return `AoE poison: ${v}`;
+    case 'poison_multiply': return `x${v} poison`;
+    case 'poison_self': return `self-poison: ${v}`;
+    case 'weakness': return `weakness: ${v}`;
+    case 'vulnerability': return `vulnerability: ${v}`;
+    case 'vulnerability_self': return `self-vuln: ${v}`;
+    case 'str': return `STR: ${v}`;
+    case 'str_per_turn': return `STR/turn: ${v}`;
+    case 'dex': return `DEX: ${v}`;
+    case 'thorn': return `thorn: ${v}`;
+    case 'energy': return `energy: ${v}`;
+    case 'draw': return `draw: ${v}`;
+    case 'damage_self': return `self-damage: ${v}`;
+    case 'damage_ramp': return `+${v} per play`;
+    case 'damage_on_hit': return `retaliation: ${v}`;
+    case 'block_retain': return 'Retain Block';
+    case 'corpse_explode': return 'Corpse Explode';
+    default: return `${key}: ${v}`;
+  }
+}
+
 export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
   const rarityStyle = RARITY_COLOR[card.rarity] || RARITY_COLOR.common;
   const typeColor = TYPE_COLOR[card.type] || 'text-gray-400';
@@ -119,7 +148,7 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
                   <span className="text-amber-500 font-bold">+{level}</span>{' '}
                   {Object.entries(stats)
                     .filter(([k]) => !k.startsWith('_'))
-                    .map(([k, v]) => `${k}: ${v}`)
+                    .map(([k, v]) => formatUpgradeStat(k, v))
                     .join(', ')}
                   {stats._bonus ? ` (${stats._bonus})` : ''}
                 </p>

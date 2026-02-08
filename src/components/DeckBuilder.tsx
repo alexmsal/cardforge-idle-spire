@@ -352,13 +352,23 @@ export function DeckBuilder() {
                             case 'block': return `${v} blk`;
                             case 'heal': return `${v} heal`;
                             case 'poison': return `${v} psn`;
+                            case 'poison_aoe': return `${v} psn AoE`;
+                            case 'poison_multiply': return `x${v} psn`;
+                            case 'poison_self': return `${v} self-psn`;
                             case 'weakness': return `${v} weak`;
                             case 'vulnerability': return `${v} vuln`;
+                            case 'vulnerability_self': return `${v} self-vuln`;
                             case 'str': return `+${v} STR`;
+                            case 'str_per_turn': return `+${v} STR/t`;
                             case 'dex': return `+${v} DEX`;
                             case 'thorn': return `+${v} thorn`;
                             case 'draw': return `draw ${v}`;
                             case 'energy': return `+${v} energy`;
+                            case 'damage_self': return `-${v} self`;
+                            case 'damage_ramp': return `+${v}/play`;
+                            case 'damage_on_hit': return `${v} retl`;
+                            case 'block_retain': return 'retain blk';
+                            case 'corpse_explode': return 'explode';
                             default: return e.type;
                           }
                         }).join(', ')}
