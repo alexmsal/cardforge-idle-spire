@@ -83,6 +83,35 @@ export function AnvilStation({ onBack }: AnvilStationProps) {
 
 // ─── Enhance Tab ─────────────────────────────────────────
 
+function formatEffectShort(type: string, value: number | boolean): string {
+  const v = typeof value === 'number' ? value : '';
+  switch (type) {
+    case 'damage': return `${v} dmg`;
+    case 'damage_aoe': return `${v} AoE`;
+    case 'block': return `${v} blk`;
+    case 'heal': return `${v} heal`;
+    case 'poison': return `${v} psn`;
+    case 'poison_aoe': return `${v} psn AoE`;
+    case 'poison_multiply': return `x${v} psn`;
+    case 'poison_self': return `${v} self-psn`;
+    case 'weakness': return `${v} weak`;
+    case 'vulnerability': return `${v} vuln`;
+    case 'vulnerability_self': return `${v} self-vuln`;
+    case 'str': return `+${v} STR`;
+    case 'str_per_turn': return `+${v} STR/t`;
+    case 'dex': return `+${v} DEX`;
+    case 'thorn': return `+${v} thorn`;
+    case 'energy': return `+${v} energy`;
+    case 'draw': return `draw ${v}`;
+    case 'damage_self': return `-${v} self`;
+    case 'damage_ramp': return `+${v}/play`;
+    case 'damage_on_hit': return `${v} retl`;
+    case 'block_retain': return 'retain blk';
+    case 'corpse_explode': return 'explode';
+    default: return `${type}`;
+  }
+}
+
 function EnhanceTab({ ownedCardIds }: { ownedCardIds: string[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -143,14 +172,14 @@ function EnhanceTab({ ownedCardIds }: { ownedCardIds: string[] }) {
             <div>
               <p className="text-xs text-gray-500 mb-1">Current</p>
               {selectedCard.effects.map((eff, i) => (
-                <p key={i} className="text-sm text-gray-300">{eff.type}: {String(eff.value)}</p>
+                <p key={i} className="text-sm text-gray-300">{formatEffectShort(eff.type, eff.value)}</p>
               ))}
             </div>
             <div>
               <p className="text-xs text-orange-400 mb-1">After +1 Enhancement</p>
               {selectedCard.effects.map((eff, i) => (
                 <p key={i} className="text-sm text-orange-300">
-                  {eff.type}: {typeof eff.value === 'number' ? Math.floor(eff.value * 1.3) : String(eff.value)}
+                  {formatEffectShort(eff.type, typeof eff.value === 'number' ? Math.floor(eff.value * 1.3) : eff.value)}
                 </p>
               ))}
             </div>

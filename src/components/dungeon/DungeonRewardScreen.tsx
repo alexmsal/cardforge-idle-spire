@@ -19,6 +19,35 @@ const RARITY_BG: Record<string, string> = {
   rare: 'bg-amber-900/20',
 };
 
+function formatEffectShort(eff: { type: string; value: number | boolean }): string {
+  const v = typeof eff.value === 'number' ? eff.value : '';
+  switch (eff.type) {
+    case 'damage': return `${v} dmg`;
+    case 'damage_aoe': return `${v} AoE`;
+    case 'block': return `${v} blk`;
+    case 'heal': return `${v} heal`;
+    case 'poison': return `${v} psn`;
+    case 'poison_aoe': return `${v} psn AoE`;
+    case 'poison_multiply': return `x${v} psn`;
+    case 'poison_self': return `${v} self-psn`;
+    case 'weakness': return `${v} weak`;
+    case 'vulnerability': return `${v} vuln`;
+    case 'vulnerability_self': return `${v} self-vuln`;
+    case 'str': return `+${v} STR`;
+    case 'str_per_turn': return `+${v} STR/t`;
+    case 'dex': return `+${v} DEX`;
+    case 'thorn': return `+${v} thorn`;
+    case 'energy': return `+${v} energy`;
+    case 'draw': return `draw ${v}`;
+    case 'damage_self': return `-${v} self`;
+    case 'damage_ramp': return `+${v}/play`;
+    case 'damage_on_hit': return `${v} retl`;
+    case 'block_retain': return 'retain blk';
+    case 'corpse_explode': return 'explode';
+    default: return `${eff.type}`;
+  }
+}
+
 export function DungeonRewardScreen({ reward, onPickCard, onSkip }: DungeonRewardScreenProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8">
@@ -56,7 +85,7 @@ export function DungeonRewardScreen({ reward, onPickCard, onSkip }: DungeonRewar
                   <div className="mt-1.5 space-y-0.5">
                     {card.effects.slice(0, 3).map((eff, j) => (
                       <p key={j} className="text-[10px] text-gray-300">
-                        {eff.type}: {String(eff.value)}
+                        {formatEffectShort(eff)}
                       </p>
                     ))}
                   </div>
