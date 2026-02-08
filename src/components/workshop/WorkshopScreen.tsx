@@ -45,11 +45,11 @@ export function WorkshopScreen() {
           </span>
         )}
         <div className="flex-1" />
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title="Gold — earned from battles and dungeon runs. Spent on shop items and Workshop upgrades.">
           <span className="text-yellow-500 text-sm">G</span>
           <span className="font-mono text-yellow-300 text-sm">{gold}</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title="Shards — earned by dismantling cards. Spent on crafting new cards at the Anvil.">
           <span className="text-cyan-500 text-sm">{'\u2B50'}</span>
           <span className="font-mono text-cyan-300 text-sm">{shards}</span>
         </div>

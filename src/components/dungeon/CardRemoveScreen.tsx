@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { getCardById } from '../../data/gameData';
 
 interface CardRemoveScreenProps {
@@ -13,6 +14,7 @@ const RARITY_BORDER: Record<string, string> = {
 };
 
 export function CardRemoveScreen({ deckCardIds, onRemove, onCancel }: CardRemoveScreenProps) {
+  const [pendingRemove, setPendingRemove] = useState<string | null>(null);
   // Deduplicate cards with counts
   const cardCounts = new Map<string, number>();
   for (const id of deckCardIds) {
@@ -36,8 +38,10 @@ export function CardRemoveScreen({ deckCardIds, onRemove, onCancel }: CardRemove
           {uniqueCards.map(({ card, id, count }) => (
             <button
               key={id}
-              onClick={() => onRemove(id)}
-              className={`w-full text-left p-2.5 rounded border ${RARITY_BORDER[card!.rarity] ?? 'border-gray-700'} bg-gray-800/60 hover:bg-red-900/20 hover:border-red-500 transition-all flex items-center justify-between`}
+              onClick={() => setPendingRemove(id)}
+              className={`w-full text-left p-2.5 rounded border ${
+                pendingRemove === id ? 'border-red-500 bg-red-900/20' : `${RARITY_BORDER[card!.rarity] ?? 'border-gray-700'} bg-gray-800/60 hover:bg-red-900/20 hover:border-red-500`
+              } transition-all flex items-center justify-between`}
             >
               <div>
                 <span className="text-sm text-white">{card!.name}</span>
@@ -52,6 +56,32 @@ export function CardRemoveScreen({ deckCardIds, onRemove, onCancel }: CardRemove
             </button>
           ))}
         </div>
+
+        {/* Confirmation */}
+        {pendingRemove && (() => {
+          const card = getCardById(pendingRemove);
+          return (
+            <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-3 mb-3 text-center">
+              <p className="text-xs text-red-300 mb-2">
+                Remove <strong className="text-white">{card?.name ?? pendingRemove}</strong> from your deck?
+              </p>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => { onRemove(pendingRemove); setPendingRemove(null); }}
+                  className="px-3 py-1 text-xs bg-red-700 hover:bg-red-600 text-white rounded transition-colors"
+                >
+                  Remove
+                </button>
+                <button
+                  onClick={() => setPendingRemove(null)}
+                  className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="text-center">
           <button

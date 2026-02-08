@@ -18,10 +18,15 @@ interface ActionFeedEntry {
 }
 
 function ActionFeed({ entries }: { entries: ActionFeedEntry[] }) {
-  const visible = entries.slice(-4);
+  const visible = entries.slice(-5);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [entries.length]);
 
   return (
-    <div className="space-y-1">
+    <div className="overflow-y-auto space-y-1 scrollbar-thin" style={{ maxHeight: '150px' }}>
       {visible.map((item, idx) => {
         const isLatest = idx === visible.length - 1;
         const msg = item.entry.message;
@@ -75,6 +80,7 @@ function ActionFeed({ entries }: { entries: ActionFeedEntry[] }) {
           </div>
         );
       })}
+      <div ref={bottomRef} />
     </div>
   );
 }

@@ -43,6 +43,9 @@ export function RunSummaryScreen({ summary, onReturn }: RunSummaryScreenProps) {
         <div className="space-y-2 mb-6">
           <SectionLabel text="Economy" />
           <StatRow label="Gold Earned" value={`+${summary.goldEarned}`} highlight="text-yellow-400" />
+          {summary.firstRunBonus > 0 && (
+            <StatRow label="First Run Bonus" value={`+${summary.firstRunBonus}`} highlight="text-emerald-400" />
+          )}
         </div>
 
         {/* Return */}

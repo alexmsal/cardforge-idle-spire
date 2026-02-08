@@ -35,14 +35,17 @@ export function DungeonShopScreen({ shop, gold, onBuyCard, onBuyHeal, onBuyRemov
                 key={i}
                 onClick={() => onBuyCard(i)}
                 disabled={item.sold || gold < item.price}
-                className={`w-40 border-2 ${RARITY_BORDER[item.card.rarity] ?? 'border-gray-600'} rounded-lg p-3 transition-all text-left ${
+                className={`w-40 border-2 ${item.isBargain ? 'border-yellow-500' : RARITY_BORDER[item.card.rarity] ?? 'border-gray-600'} rounded-lg p-3 transition-all text-left ${
                   item.sold
                     ? 'opacity-30 cursor-not-allowed'
                     : gold < item.price
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:brightness-125 hover:scale-105'
-                } bg-gray-800/60`}
+                } ${item.isBargain ? 'bg-yellow-900/20' : 'bg-gray-800/60'}`}
               >
+                {item.isBargain && (
+                  <span className="text-[10px] font-bold text-yellow-400 bg-yellow-900/40 px-1.5 py-0.5 rounded mb-1 inline-block">BARGAIN</span>
+                )}
                 <p className="text-sm font-bold text-white truncate">{item.card.name}</p>
                 <p className="text-[10px] text-gray-400 capitalize">{item.card.rarity} {item.card.type}</p>
                 <p className="text-xs text-blue-400 mt-1">Cost: {item.card.cost} energy</p>

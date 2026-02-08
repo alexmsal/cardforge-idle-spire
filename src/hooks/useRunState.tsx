@@ -89,7 +89,7 @@ const RunStateContext = createContext<RunStateContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────
 
 export function RunStateProvider({ children }: { children: ReactNode }) {
-  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor, foilUpgrades } = useGameState();
+  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor, foilUpgrades, economyStats } = useGameState();
   const [run, setRun] = useState<RunState | null>(null);
 
   // Transient state for shop/chest (not persisted in run)
@@ -127,10 +127,32 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   }, [deckCardIds, aiRules, foilUpgrades]);
 
   const abandonRun = useCallback(() => {
+    // Persist any cards acquired during the run before clearing
+    if (run) {
+      const newCards: string[] = [];
+      const startingCounts: Record<string, number> = {};
+      for (const id of deckCardIds) {
+        startingCounts[id] = (startingCounts[id] ?? 0) + 1;
+      }
+      const runCounts: Record<string, number> = {};
+      for (const id of run.deckCardIds) {
+        runCounts[id] = (runCounts[id] ?? 0) + 1;
+      }
+      for (const id of Object.keys(runCounts)) {
+        const extra = runCounts[id] - (startingCounts[id] ?? 0);
+        for (let i = 0; i < extra; i++) {
+          newCards.push(id);
+        }
+      }
+      if (newCards.length > 0) {
+        addOwnedCards(newCards);
+      }
+      setNewCardsFromRun(newCards);
+    }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, []);
+  }, [run, deckCardIds, addOwnedCards]);
 
   // ─── Map navigation ─────────────────────────────────────
 
@@ -397,16 +419,19 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
     if (shopState) return shopState;
     if (!run || run.phase !== 'shop') return null;
 
-    // Generate shop inventory
+    // Generate shop inventory with floor-scaled pricing
     const pricing = shopConfig.config.pricing;
     const rarityWeights = shopConfig.config.rarityWeights;
     const rarities = Object.keys(rarityWeights);
     const weights = rarities.map((r) => rarityWeights[r]);
     const totalWeight = weights.reduce((a, b) => a + b, 0);
 
+    // Scale prices by floor: early floors are cheaper
+    const floor = run.currentFloor;
+    const floorScale = Math.max(0.3, 0.5 + floor * 0.1);
+
     const cards: ShopItem[] = [];
     for (let i = 0; i < shopConfig.config.cardSlots; i++) {
-      // Pick rarity
       let roll = Math.random() * totalWeight;
       let rarity = 'common';
       for (let j = 0; j < rarities.length; j++) {
@@ -414,18 +439,28 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
         if (roll <= 0) { rarity = rarities[j]; break; }
       }
       const card = getRandomCard(rarity);
-      const price = pricing[rarity as keyof typeof pricing] as number ?? 50;
+      const basePrice = pricing[rarity as keyof typeof pricing] as number ?? 50;
+      const price = Math.max(15, Math.round(basePrice * floorScale));
       cards.push({ card, price, sold: false });
     }
+
+    // Bargain slot: one random card at 50% discount
+    const bargainCard = getRandomCard();
+    const bargainBase = pricing[bargainCard.rarity as keyof typeof pricing] as number ?? 50;
+    const bargainPrice = Math.max(10, Math.round(bargainBase * floorScale * 0.5));
+    cards.push({ card: bargainCard, price: bargainPrice, sold: false, isBargain: true });
+
+    const healPrice = Math.max(15, Math.round(pricing.healPotion * floorScale));
+    const removalPrice = Math.max(20, Math.round(pricing.cardRemoval * floorScale));
 
     const state: ShopState = {
       cards,
       healFlask: {
-        price: pricing.healPotion,
+        price: healPrice,
         healAmount: pricing.healAmount,
         sold: false,
       },
-      removalPrice: pricing.cardRemoval,
+      removalPrice,
     };
     setShopState(state);
     return state;
@@ -592,24 +627,29 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
 
   const getRunSummary = useCallback((): RunSummary | null => {
     if (!run) return null;
+    const firstRunBonus = economyStats.totalRunsCompleted === 0 ? 100 : 0;
     return {
       result: run.phase === 'victory' ? 'victory' : 'defeat',
       floorsCleared: run.floorsCleared,
       battlesWon: run.battlesWon,
       elitesSlain: run.elitesSlain,
       goldEarned: run.goldEarned,
+      firstRunBonus,
       finalHp: run.hp,
       maxHp: run.maxHp,
       deckSize: run.deckCardIds.length,
       bossKill: run.phase === 'victory',
     };
-  }, [run]);
+  }, [run, economyStats.totalRunsCompleted]);
 
   const returnToMap = useCallback(() => {
     // Transfer earned gold to persistent state + track economy
     if (run) {
-      addPersistentGold(run.goldEarned);
-      trackGoldEarned(run.goldEarned);
+      // First-run bonus: +100G on your very first completed run
+      const firstRunBonus = economyStats.totalRunsCompleted === 0 ? 100 : 0;
+      const totalGold = run.goldEarned + firstRunBonus;
+      addPersistentGold(totalGold);
+      trackGoldEarned(totalGold);
       trackMaxFloor(run.floorsCleared);
       const isBossKill = run.phase === 'victory';
       trackRunCompleted(isBossKill);
@@ -641,7 +681,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, [run, deckCardIds, addPersistentGold, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor]);
+  }, [run, deckCardIds, addPersistentGold, addOwnedCards, trackGoldEarned, trackRunCompleted, trackMaxFloor, economyStats.totalRunsCompleted]);
 
   const dismissNewCards = useCallback(() => {
     setNewCardsFromRun([]);

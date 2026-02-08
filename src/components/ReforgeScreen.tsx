@@ -81,7 +81,7 @@ export function ReforgeScreen() {
             Prestige {toRoman(prestigeLevel)}
           </span>
         )}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title="Foil — earned by Reforging. Spent on permanent upgrades in the Foil Shop.">
           <span className="text-amber-400 text-sm">{'\u2B50'}</span>
           <span className="font-mono text-amber-300 text-sm">{foil} Foil</span>
         </div>
@@ -324,6 +324,13 @@ interface FoilShopTabProps {
   onBuy: (upgradeId: string) => boolean;
 }
 
+const FOIL_DESCRIPTIONS: Record<string, string> = {
+  hp_boost: 'Start each dungeon run with 5 extra HP. Stacks up to 10 times (+50 HP total). Base starting HP is 75.',
+  gold_boost: 'Earn 1 extra gold from every battle in the dungeon. Stacks up to 10 times.',
+  start_card: 'Draw 1 additional card at the start of each turn. Base hand size is 5. Stacks up to 2 times (max 7 cards).',
+  eternal_slot: 'Eternal cards survive Reforge and carry into your next cycle. This upgrade lets you designate one more card as Eternal. Stacks up to 2 times.',
+};
+
 function FoilShopTab({ foil, foilUpgrades, onBuy }: FoilShopTabProps) {
   return (
     <div className="space-y-4">
@@ -346,7 +353,10 @@ function FoilShopTab({ foil, foilUpgrades, onBuy }: FoilShopTabProps) {
           >
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-bold text-white">{upgrade.name}</h4>
-              <div className="flex items-center gap-2 mt-1">
+              <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
+                {FOIL_DESCRIPTIONS[upgrade.id] ?? ''}
+              </p>
+              <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-[10px] text-gray-500">
                   {currentStacks}/{upgrade.maxStacks} stacks
                 </span>
