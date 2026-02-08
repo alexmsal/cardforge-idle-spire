@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { allCards, starterTemplates, DECK_MIN, DECK_MAX } from '../data/gameData';
+import { starterTemplates, DECK_MIN, DECK_MAX, getCardById } from '../data/gameData';
 import { CardDetailModal } from './CardDetailModal';
 import { QuickTestPopup } from './QuickTestPopup';
 import type { Card, Rarity, CardType, Archetype } from '../models';
@@ -29,7 +29,7 @@ const TYPE_ICON: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────
 
 export function DeckBuilder() {
-  const { deckCards, deckCardIds, addCard, removeCardAt, loadTemplate, aiRules } = useGameState();
+  const { deckCards, deckCardIds, addCard, removeCardAt, loadTemplate, aiRules, ownedCardIds } = useGameState();
 
   const [filterType, setFilterType] = useState<CardType | 'all'>('all');
   const [filterArchetype, setFilterArchetype] = useState<Archetype | 'all'>('all');
@@ -55,23 +55,37 @@ export function DeckBuilder() {
     deckCardIds.forEach((id, idx) => {
       if (!seen.has(id)) {
         seen.add(id);
-        const card = allCards.find((c) => c.id === id);
+        const card = getCardById(id);
         if (card) items.push({ card, count: deckCounts[id], firstIndex: idx });
       }
     });
     return items;
   }, [deckCardIds, deckCounts]);
 
-  // Filtered library
+  // Deduplicated owned cards for library display
+  const ownedUnique = useMemo(() => {
+    const seen = new Set<string>();
+    const cards: Card[] = [];
+    for (const id of ownedCardIds) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        const card = getCardById(id);
+        if (card) cards.push(card);
+      }
+    }
+    return cards;
+  }, [ownedCardIds]);
+
+  // Filtered library (from owned cards)
   const filteredCards = useMemo(() => {
-    return allCards.filter((c) => {
+    return ownedUnique.filter((c) => {
       if (filterType !== 'all' && c.type !== filterType) return false;
       if (filterArchetype !== 'all' && c.archetype !== filterArchetype) return false;
       if (filterRarity !== 'all' && c.rarity !== filterRarity) return false;
       if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [filterType, filterArchetype, filterRarity, search]);
+  }, [ownedUnique, filterType, filterArchetype, filterRarity, search]);
 
   // Deck stats
   const stats = useMemo(() => {

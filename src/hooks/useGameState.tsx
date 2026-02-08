@@ -6,36 +6,56 @@ import {
   getCardById,
   DECK_MAX,
   MAX_AI_RULES,
+  stationsConfig,
+  idleConfig,
 } from '../data/gameData';
 import type { StarterDeckTemplate } from '../data/gameData';
+import type { InstalledGenerator, EconomyStats, OfflineProgress } from '../engine/IdleEngine';
+import { DEFAULT_ECONOMY_STATS, calculateOfflineProgress } from '../engine/IdleEngine';
 
 // ─── Storage keys ──────────────────────────────────────────
 
 const STORAGE_DECK = 'cardforge_deck_ids';
 const STORAGE_AI = 'cardforge_ai_rules';
+const STORAGE_OWNED = 'cardforge_owned_ids';
+const STORAGE_SHARDS = 'cardforge_shards';
+const STORAGE_GOLD = 'cardforge_gold';
+const STORAGE_STATIONS = 'cardforge_stations';
+const STORAGE_ECONOMY = 'cardforge_economy';
+const STORAGE_GENERATORS = 'cardforge_generators';
+const STORAGE_LAST_ONLINE = 'cardforge_last_online';
 
-function saveDeckToStorage(cardIds: string[]) {
-  try { localStorage.setItem(STORAGE_DECK, JSON.stringify(cardIds)); } catch { /* noop */ }
+function saveJson(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
 }
 
-function loadDeckFromStorage(): string[] | null {
+function loadJson<T>(key: string): T | null {
   try {
-    const raw = localStorage.getItem(STORAGE_DECK);
-    if (raw) return JSON.parse(raw);
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw) as T;
   } catch { /* noop */ }
   return null;
 }
 
-function saveRulesToStorage(rules: AIRule[]) {
-  try { localStorage.setItem(STORAGE_AI, JSON.stringify(rules)); } catch { /* noop */ }
+// ─── Station levels ──────────────────────────────────────────
+
+export interface StationLevels {
+  anvil: number;
+  library: number;
+  portal: number;
 }
 
-function loadRulesFromStorage(): AIRule[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_AI);
-    if (raw) return JSON.parse(raw);
-  } catch { /* noop */ }
-  return null;
+const DEFAULT_STATIONS: StationLevels = { anvil: 1, library: 1, portal: 1 };
+
+export function getStationUpgradeCost(stationId: keyof StationLevels, currentLevel: number): number {
+  const cfg = stationsConfig[stationId];
+  if (!cfg) return Infinity;
+  if (currentLevel >= cfg.maxLevel) return Infinity;
+  return Math.floor(cfg.baseCost * Math.pow(currentLevel, cfg.costExponent));
+}
+
+export function getLibraryCapacity(libraryLevel: number): number {
+  return 15 + libraryLevel * 5;
 }
 
 // ─── Context type ──────────────────────────────────────────
@@ -55,6 +75,43 @@ interface GameStateContextType {
   removeRule: (index: number) => void;
   moveRule: (fromIndex: number, toIndex: number) => void;
   setAiRules: (rules: AIRule[]) => void;
+
+  // Owned cards (collection)
+  ownedCardIds: string[];
+  ownedCards: Card[];
+  addOwnedCard: (cardId: string) => void;
+  addOwnedCards: (cardIds: string[]) => void;
+  removeOwnedCard: (cardId: string) => void;
+
+  // Economy
+  gold: number;
+  shards: number;
+  addGold: (amount: number) => void;
+  spendGold: (amount: number) => boolean;
+  addShards: (amount: number) => void;
+  spendShards: (amount: number) => boolean;
+
+  // Stations
+  stationLevels: StationLevels;
+  upgradeStation: (stationId: keyof StationLevels) => boolean;
+  libraryCapacity: number;
+
+  // Economy tracking
+  economyStats: EconomyStats;
+  trackGoldEarned: (amount: number) => void;
+  trackGoldSpent: (amount: number) => void;
+  trackShardsEarned: (amount: number) => void;
+  trackShardsSpent: (amount: number) => void;
+  trackRunCompleted: (bossKill: boolean) => void;
+
+  // Generators
+  generators: InstalledGenerator[];
+  installGenerator: (cardId: string) => void;
+  removeGenerator: (cardId: string) => void;
+
+  // Offline / Welcome Back
+  pendingOfflineProgress: OfflineProgress | null;
+  dismissOfflineProgress: () => void;
 }
 
 const GameStateContext = createContext<GameStateContextType | null>(null);
@@ -64,7 +121,7 @@ const GameStateContext = createContext<GameStateContextType | null>(null);
 export function GameStateProvider({ children }: { children: ReactNode }) {
   // Initialize from localStorage or default template
   const [deckCardIds, setDeckCardIds] = useState<string[]>(() => {
-    const saved = loadDeckFromStorage();
+    const saved = loadJson<string[]>(STORAGE_DECK);
     if (saved && saved.length > 0) return saved;
     const template = starterTemplates[0];
     const ids: string[] = [];
@@ -75,17 +132,82 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
   });
 
   const [aiRules, setAiRulesRaw] = useState<AIRule[]>(() => {
-    const saved = loadRulesFromStorage();
+    const saved = loadJson<AIRule[]>(STORAGE_AI);
     if (saved && saved.length > 0) return saved;
     return starterTemplates[0].aiRules;
   });
 
+  const [ownedCardIds, setOwnedCardIds] = useState<string[]>(() => {
+    const saved = loadJson<string[]>(STORAGE_OWNED);
+    if (saved && saved.length > 0) return saved;
+    // Default: own the starter deck cards
+    const template = starterTemplates[0];
+    const ids: string[] = [];
+    for (const entry of template.cards) {
+      for (let i = 0; i < entry.count; i++) ids.push(entry.id);
+    }
+    return ids;
+  });
+
+  const [gold, setGold] = useState<number>(() => loadJson<number>(STORAGE_GOLD) ?? 0);
+  const [shards, setShards] = useState<number>(() => loadJson<number>(STORAGE_SHARDS) ?? 0);
+  const [stationLevels, setStationLevels] = useState<StationLevels>(
+    () => loadJson<StationLevels>(STORAGE_STATIONS) ?? DEFAULT_STATIONS,
+  );
+
+  const [economyStats, setEconomyStats] = useState<EconomyStats>(
+    () => loadJson<EconomyStats>(STORAGE_ECONOMY) ?? DEFAULT_ECONOMY_STATS,
+  );
+
+  const [generators, setGenerators] = useState<InstalledGenerator[]>(
+    () => loadJson<InstalledGenerator[]>(STORAGE_GENERATORS) ?? [],
+  );
+
+  // Calculate offline progress on first load
+  const [pendingOfflineProgress, setPendingOfflineProgress] = useState<OfflineProgress | null>(() => {
+    const lastOnline = loadJson<number>(STORAGE_LAST_ONLINE);
+    if (!lastOnline) return null;
+    const savedGenerators = loadJson<InstalledGenerator[]>(STORAGE_GENERATORS) ?? [];
+    if (savedGenerators.length === 0) return null;
+    const now = Date.now();
+    const maxOfflineMs = idleConfig.maxOfflineHours * 60 * 60 * 1000;
+    const progress = calculateOfflineProgress(
+      savedGenerators,
+      lastOnline,
+      now,
+      idleConfig.generatorDegradationPerDay,
+      maxOfflineMs,
+      idleConfig.offlineRewardMultiplier,
+    );
+    if (progress.goldGenerated === 0 && progress.shardsGenerated === 0 && progress.generatorsExpired.length === 0) {
+      return null;
+    }
+    return progress;
+  });
+
   // Persist on change
-  useEffect(() => { saveDeckToStorage(deckCardIds); }, [deckCardIds]);
-  useEffect(() => { saveRulesToStorage(aiRules); }, [aiRules]);
+  useEffect(() => { saveJson(STORAGE_DECK, deckCardIds); }, [deckCardIds]);
+  useEffect(() => { saveJson(STORAGE_AI, aiRules); }, [aiRules]);
+  useEffect(() => { saveJson(STORAGE_OWNED, ownedCardIds); }, [ownedCardIds]);
+  useEffect(() => { saveJson(STORAGE_GOLD, gold); }, [gold]);
+  useEffect(() => { saveJson(STORAGE_SHARDS, shards); }, [shards]);
+  useEffect(() => { saveJson(STORAGE_STATIONS, stationLevels); }, [stationLevels]);
+  useEffect(() => { saveJson(STORAGE_ECONOMY, economyStats); }, [economyStats]);
+  useEffect(() => { saveJson(STORAGE_GENERATORS, generators); }, [generators]);
+
+  // Keep last-online timestamp fresh
+  useEffect(() => {
+    saveJson(STORAGE_LAST_ONLINE, Date.now());
+    const interval = setInterval(() => saveJson(STORAGE_LAST_ONLINE, Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Resolve IDs to Card objects
   const deckCards: Card[] = deckCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined);
+  const ownedCards: Card[] = ownedCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined);
+  const libraryCapacity = getLibraryCapacity(stationLevels.library);
+
+  // ─── Deck operations ───────────────────────────────────────
 
   const addCard = useCallback((cardId: string) => {
     setDeckCardIds((prev) => {
@@ -109,7 +231,17 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     }
     setDeckCardIds(ids);
     setAiRulesRaw(template.aiRules);
+    // Also ensure all template cards are owned
+    setOwnedCardIds((prev) => {
+      const newOwned = [...prev];
+      for (const id of ids) {
+        newOwned.push(id);
+      }
+      return newOwned;
+    });
   }, []);
+
+  // ─── AI Rules ──────────────────────────────────────────────
 
   const addRule = useCallback((rule: AIRule) => {
     setAiRulesRaw((prev) => {
@@ -130,7 +262,6 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     setAiRulesRaw((prev) => {
       const next = [...prev];
       next.splice(index, 1);
-      // Re-number priorities
       return next.map((r, i) => ({ ...r, priority: i + 1 }));
     });
   }, []);
@@ -148,6 +279,140 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     setAiRulesRaw(rules.map((r, i) => ({ ...r, priority: i + 1 })));
   }, []);
 
+  // ─── Owned cards ───────────────────────────────────────────
+
+  const addOwnedCard = useCallback((cardId: string) => {
+    setOwnedCardIds((prev) => [...prev, cardId]);
+  }, []);
+
+  const addOwnedCards = useCallback((cardIds: string[]) => {
+    setOwnedCardIds((prev) => [...prev, ...cardIds]);
+  }, []);
+
+  const removeOwnedCard = useCallback((cardId: string) => {
+    setOwnedCardIds((prev) => {
+      const idx = prev.indexOf(cardId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next.splice(idx, 1);
+      return next;
+    });
+  }, []);
+
+  // ─── Economy ───────────────────────────────────────────────
+
+  const addGold = useCallback((amount: number) => {
+    setGold((prev) => prev + amount);
+  }, []);
+
+  const spendGold = useCallback((amount: number): boolean => {
+    let success = false;
+    setGold((prev) => {
+      if (prev >= amount) { success = true; return prev - amount; }
+      return prev;
+    });
+    return success;
+  }, []);
+
+  const addShards = useCallback((amount: number) => {
+    setShards((prev) => prev + amount);
+  }, []);
+
+  const spendShards = useCallback((amount: number): boolean => {
+    let success = false;
+    setShards((prev) => {
+      if (prev >= amount) { success = true; return prev - amount; }
+      return prev;
+    });
+    return success;
+  }, []);
+
+  // ─── Stations ──────────────────────────────────────────────
+
+  const upgradeStation = useCallback((stationId: keyof StationLevels): boolean => {
+    const currentLevel = stationLevels[stationId];
+    const cost = getStationUpgradeCost(stationId, currentLevel);
+    if (gold < cost) return false;
+
+    const cfg = stationsConfig[stationId];
+    if (!cfg || currentLevel >= cfg.maxLevel) return false;
+
+    setGold((prev) => prev - cost);
+    setStationLevels((prev) => ({
+      ...prev,
+      [stationId]: prev[stationId] + 1,
+    }));
+    return true;
+  }, [gold, stationLevels]);
+
+  // ─── Economy tracking ─────────────────────────────────────
+
+  const trackGoldEarned = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalGoldEarned: prev.totalGoldEarned + amount }));
+  }, []);
+
+  const trackGoldSpent = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalGoldSpent: prev.totalGoldSpent + amount }));
+  }, []);
+
+  const trackShardsEarned = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalShardsEarned: prev.totalShardsEarned + amount }));
+  }, []);
+
+  const trackShardsSpent = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalShardsSpent: prev.totalShardsSpent + amount }));
+  }, []);
+
+  const trackRunCompleted = useCallback((bossKill: boolean) => {
+    setEconomyStats((prev) => ({
+      ...prev,
+      totalRunsCompleted: prev.totalRunsCompleted + 1,
+      totalBossKills: prev.totalBossKills + (bossKill ? 1 : 0),
+    }));
+  }, []);
+
+  // ─── Generators ─────────────────────────────────────────
+
+  const installGenerator = useCallback((cardId: string) => {
+    setGenerators((prev) => [...prev, { cardId, installedAt: Date.now() }]);
+  }, []);
+
+  const removeGenerator = useCallback((cardId: string) => {
+    setGenerators((prev) => {
+      const idx = prev.findIndex((g) => g.cardId === cardId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next.splice(idx, 1);
+      return next;
+    });
+  }, []);
+
+  // ─── Dismiss offline progress ───────────────────────────
+
+  const dismissOfflineProgress = useCallback(() => {
+    if (!pendingOfflineProgress) return;
+    // Apply the offline rewards
+    if (pendingOfflineProgress.goldGenerated > 0) {
+      setGold((prev) => prev + pendingOfflineProgress.goldGenerated);
+      setEconomyStats((prev) => ({
+        ...prev,
+        totalGoldEarned: prev.totalGoldEarned + pendingOfflineProgress.goldGenerated,
+      }));
+    }
+    if (pendingOfflineProgress.shardsGenerated > 0) {
+      setShards((prev) => prev + pendingOfflineProgress.shardsGenerated);
+      setEconomyStats((prev) => ({
+        ...prev,
+        totalShardsEarned: prev.totalShardsEarned + pendingOfflineProgress.shardsGenerated,
+      }));
+    }
+    // Remove expired generators
+    if (pendingOfflineProgress.generatorsExpired.length > 0) {
+      setGenerators((prev) => prev.filter((g) => !pendingOfflineProgress.generatorsExpired.includes(g.cardId)));
+    }
+    setPendingOfflineProgress(null);
+  }, [pendingOfflineProgress]);
+
   return (
     <GameStateContext.Provider
       value={{
@@ -162,6 +427,31 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
         removeRule,
         moveRule,
         setAiRules,
+        ownedCardIds,
+        ownedCards,
+        addOwnedCard,
+        addOwnedCards,
+        removeOwnedCard,
+        gold,
+        shards,
+        addGold,
+        spendGold,
+        addShards,
+        spendShards,
+        stationLevels,
+        upgradeStation,
+        libraryCapacity,
+        economyStats,
+        trackGoldEarned,
+        trackGoldSpent,
+        trackShardsEarned,
+        trackShardsSpent,
+        trackRunCompleted,
+        generators,
+        installGenerator,
+        removeGenerator,
+        pendingOfflineProgress,
+        dismissOfflineProgress,
       }}
     >
       {children}

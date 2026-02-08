@@ -1,5 +1,5 @@
 export type Rarity = 'common' | 'uncommon' | 'rare';
-export type CardType = 'attack' | 'defense' | 'skill' | 'reaction';
+export type CardType = 'attack' | 'defense' | 'skill' | 'reaction' | 'generator';
 export type Archetype = 'neutral' | 'berserker' | 'poison' | 'shield';
 export type EffectTarget = 'enemy' | 'self' | 'all_enemies' | 'attacker';
 export type EffectDuration = 'turn' | 'combat';
