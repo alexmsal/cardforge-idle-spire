@@ -21,7 +21,7 @@ const STATION_COLORS: Record<string, { border: string; bg: string; glow: string 
 };
 
 export function WorkshopScreen() {
-  const { gold, shards, stationLevels, upgradeStation } = useGameState();
+  const { gold, shards, stationLevels, upgradeStation, prestigeLevel } = useGameState();
   const [view, setView] = useState<StationView>('hub');
 
   if (view === 'anvil') {
@@ -39,6 +39,11 @@ export function WorkshopScreen() {
       {/* Top bar: resources */}
       <div className="border-b border-gray-800 px-6 py-2.5 flex items-center gap-6 flex-shrink-0 bg-gray-900/80">
         <h2 className="text-lg font-bold">Workshop</h2>
+        {prestigeLevel > 0 && (
+          <span className="text-[10px] text-amber-400 bg-amber-900/30 px-1.5 py-0.5 rounded font-mono">
+            Prestige {prestigeLevel}
+          </span>
+        )}
         <div className="flex-1" />
         <div className="flex items-center gap-1.5">
           <span className="text-yellow-500 text-sm">G</span>

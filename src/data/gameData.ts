@@ -59,6 +59,24 @@ export const idleConfig = cfg.gameConfig.idle as {
   speedMultipliers: number[];
 };
 
+// ─── Prestige / foil data ───────────────────────────────
+
+export interface FoilUpgradeDef {
+  id: string;
+  name: string;
+  cost: number;
+  effect: { type: string; value: number };
+  maxStacks: number;
+}
+
+export const prestigeConfig = cfg.gameConfig.prestige as {
+  foilFormula: string;
+  reset: string[];
+  keep: string[];
+  eternalCardSlots: number;
+  foilUpgrades: FoilUpgradeDef[];
+};
+
 export const generatorCards: Card[] = allCards.filter((c) => c.type === 'generator');
 const combatCards: Card[] = allCards.filter((c) => c.type !== 'generator');
 

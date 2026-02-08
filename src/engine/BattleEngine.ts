@@ -13,7 +13,7 @@ import { createDefaultStatusEffects } from '../models';
 import { AIEngine } from './AIEngine';
 import type { AIRule } from '../models/AIRule';
 
-const HAND_SIZE = 5;
+const DEFAULT_HAND_SIZE = 5;
 const MAX_HAND_SIZE = 10;
 const STARTING_ENERGY = 3;
 const TURN_LIMIT = 50;
@@ -23,6 +23,7 @@ export class BattleEngine {
   private aiEngine: AIEngine;
   private stats = { cardsPlayed: 0, damageDealt: 0, damageReceived: 0 };
   private nextInstanceId = 1;
+  private handSize = DEFAULT_HAND_SIZE;
 
   constructor(aiRules: AIRule[]) {
     this.aiEngine = new AIEngine(aiRules);
@@ -33,8 +34,10 @@ export class BattleEngine {
     deckCards: Card[],
     enemyDefs: EnemyDef[],
     playerMaxHp: number = 80,
-    playerCurrentHp?: number
+    playerCurrentHp?: number,
+    handSize: number = DEFAULT_HAND_SIZE
   ): CombatState {
+    this.handSize = handSize;
     const drawPile = this.buildDeck(deckCards);
     this.shuffle(drawPile);
 
@@ -167,7 +170,7 @@ export class BattleEngine {
     }
 
     // Draw cards
-    this.drawCards(HAND_SIZE);
+    this.drawCards(this.handSize);
   }
 
   private playerPhase(): void {

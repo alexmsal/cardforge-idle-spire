@@ -1,4 +1,19 @@
 import { NavLink } from 'react-router-dom';
+import { useGameState } from '../hooks/useGameState';
+
+function toRoman(n: number): string {
+  if (n <= 0) return '';
+  const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const syms = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  let result = '';
+  for (let i = 0; i < vals.length; i++) {
+    while (n >= vals[i]) {
+      result += syms[i];
+      n -= vals[i];
+    }
+  }
+  return result;
+}
 
 const links = [
   { to: '/dungeon', label: 'Dungeon', icon: '\uD83C\uDFF0' },
@@ -9,9 +24,19 @@ const links = [
 ];
 
 export function NavBar() {
+  const { economyStats, prestigeLevel } = useGameState();
+  const reforgeUnlocked = economyStats.totalBossKills > 0 || prestigeLevel > 0;
+
   return (
     <nav className="bg-gray-950 border-b border-gray-800 px-6 py-0 flex items-center gap-1">
-      <span className="text-sm font-bold text-gray-300 mr-4">CardForge</span>
+      <span className="text-sm font-bold text-gray-300 mr-4">
+        CardForge
+        {prestigeLevel > 0 && (
+          <span className="ml-1.5 text-[10px] text-amber-400 bg-amber-900/30 px-1.5 py-0.5 rounded font-mono">
+            {toRoman(prestigeLevel)}
+          </span>
+        )}
+      </span>
       {links.map((l) => (
         <NavLink
           key={l.to}
@@ -28,6 +53,22 @@ export function NavBar() {
           {l.label}
         </NavLink>
       ))}
+      {/* Reforge tab */}
+      <NavLink
+        to="/reforge"
+        className={({ isActive }) =>
+          `px-4 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+            !reforgeUnlocked
+              ? 'text-gray-700 border-transparent cursor-not-allowed pointer-events-none'
+              : isActive
+                ? 'text-amber-300 border-amber-500'
+                : 'text-gray-500 border-transparent hover:text-amber-300 hover:border-amber-600'
+          }`
+        }
+      >
+        <span className="mr-1.5">{'\u2728'}</span>
+        Reforge
+      </NavLink>
     </nav>
   );
 }

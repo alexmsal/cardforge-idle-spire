@@ -165,6 +165,8 @@ export function DungeonScreen() {
           deckCardIds={run.deckCardIds}
           aiRules={run.aiRules}
           enemyDefs={battleEnemies}
+          playerMaxHp={run.maxHp}
+          playerCurrentHp={run.hp}
           onBattleComplete={handleBattleComplete}
         />
       )}

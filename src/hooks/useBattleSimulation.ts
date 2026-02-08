@@ -18,6 +18,9 @@ export function useBattleSimulation(
   deckCards: Card[],
   aiRules: AIRule[],
   enemyDefs: EnemyDef[],
+  playerMaxHp?: number,
+  playerCurrentHp?: number,
+  handSize?: number,
 ) {
   const [simState, setSimState] = useState<SimState>('idle');
   const [snapshot, setSnapshot] = useState<BattleSnapshot | null>(null);
@@ -86,7 +89,7 @@ export function useBattleSimulation(
   const startBattle = useCallback(() => {
     clearTimer();
     const engine = new BattleEngine(aiRules);
-    engine.initCombat(deckCards, enemyDefs);
+    engine.initCombat(deckCards, enemyDefs, playerMaxHp, playerCurrentHp, handSize);
     engineRef.current = engine;
     prevLogLenRef.current = 0;
 
@@ -96,7 +99,7 @@ export function useBattleSimulation(
     setSummary(null);
     setSimState('running');
     scheduleNext(speed);
-  }, [deckCards, aiRules, enemyDefs, speed, clearTimer, captureSnapshot, scheduleNext]);
+  }, [deckCards, aiRules, enemyDefs, speed, clearTimer, captureSnapshot, scheduleNext, playerMaxHp, playerCurrentHp, handSize]);
 
   const pause = useCallback(() => {
     clearTimer();

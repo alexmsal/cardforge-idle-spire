@@ -24,9 +24,8 @@ import {
   getRandomCard,
   getRandomCardChoices,
   allEnemies,
-  STARTING_HP,
 } from '../data/gameData';
-import { useGameState } from './useGameState';
+import { useGameState, getEffectiveStartingHp } from './useGameState';
 
 // ─── Context ─────────────────────────────────────────────
 
@@ -86,7 +85,7 @@ const RunStateContext = createContext<RunStateContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────
 
 export function RunStateProvider({ children }: { children: ReactNode }) {
-  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, trackGoldEarned, trackRunCompleted } = useGameState();
+  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, trackGoldEarned, trackRunCompleted, trackMaxFloor, foilUpgrades } = useGameState();
   const [run, setRun] = useState<RunState | null>(null);
 
   // Transient state for shop/chest (not persisted in run)
@@ -99,13 +98,14 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
 
   const startRun = useCallback(() => {
     const map = generateDungeonMap(dungeonConfig);
+    const effectiveHp = getEffectiveStartingHp(foilUpgrades);
     const newRun: RunState = {
       map,
       currentFloor: 0,
       currentNodeId: null,
       phase: 'map',
-      hp: STARTING_HP,
-      maxHp: STARTING_HP,
+      hp: effectiveHp,
+      maxHp: effectiveHp,
       gold: 0,
       deckCardIds: [...deckCardIds],
       aiRules: [...aiRules],
@@ -119,7 +119,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
     setRun(newRun);
     setShopState(null);
     setChestReward(null);
-  }, [deckCardIds, aiRules]);
+  }, [deckCardIds, aiRules, foilUpgrades]);
 
   const abandonRun = useCallback(() => {
     setRun(null);
@@ -185,9 +185,9 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
         return { ...prev, hp: 0, phase: 'defeat' };
       }
 
-      // Calculate rewards
+      // Calculate rewards (includes foil gold_boost bonus)
       const nodeType = node?.type ?? 'battle';
-      const goldReward = calculateBattleGold(prev.currentFloor, nodeType, economyConfig);
+      const goldReward = calculateBattleGold(prev.currentFloor, nodeType, economyConfig) + foilUpgrades.gold_boost;
       const rarity = rollCardRewardRarity(economyConfig);
       const cardChoices = rarity ? getRandomCardChoices(3, rarity) : [];
 
@@ -208,7 +208,7 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
         phase: 'reward' as RunPhase,
       };
     });
-  }, []);
+  }, [foilUpgrades.gold_boost]);
 
   // ─── Reward handling ────────────────────────────────────
 
@@ -605,13 +605,14 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
     if (run) {
       addPersistentGold(run.goldEarned);
       trackGoldEarned(run.goldEarned);
+      trackMaxFloor(run.floorsCleared);
       const isBossKill = run.phase === 'victory';
       trackRunCompleted(isBossKill);
     }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, [run, addPersistentGold, trackGoldEarned, trackRunCompleted]);
+  }, [run, addPersistentGold, trackGoldEarned, trackRunCompleted, trackMaxFloor]);
 
   return (
     <RunStateContext.Provider

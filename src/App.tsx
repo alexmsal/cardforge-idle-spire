@@ -7,6 +7,7 @@ import { DeckBuilder } from './components/DeckBuilder';
 import { AIEditor } from './components/AIEditor';
 import { DungeonScreen } from './components/dungeon/DungeonScreen';
 import { WorkshopScreen } from './components/workshop/WorkshopScreen';
+import { ReforgeScreen } from './components/ReforgeScreen';
 import { WelcomeBackScreen } from './components/WelcomeBackScreen';
 
 function AppContent() {
@@ -24,6 +25,7 @@ function AppContent() {
               <Route path="/battle" element={<BattleScreen />} />
               <Route path="/deck" element={<DeckBuilder />} />
               <Route path="/ai" element={<AIEditor />} />
+              <Route path="/reforge" element={<ReforgeScreen />} />
               <Route path="*" element={<Navigate to="/dungeon" replace />} />
             </Routes>
           </div>

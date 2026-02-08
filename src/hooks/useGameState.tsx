@@ -8,6 +8,8 @@ import {
   MAX_AI_RULES,
   stationsConfig,
   idleConfig,
+  prestigeConfig,
+  STARTING_HP,
 } from '../data/gameData';
 import type { StarterDeckTemplate } from '../data/gameData';
 import type { InstalledGenerator, EconomyStats, OfflineProgress } from '../engine/IdleEngine';
@@ -24,6 +26,11 @@ const STORAGE_STATIONS = 'cardforge_stations';
 const STORAGE_ECONOMY = 'cardforge_economy';
 const STORAGE_GENERATORS = 'cardforge_generators';
 const STORAGE_LAST_ONLINE = 'cardforge_last_online';
+const STORAGE_FOIL = 'cardforge_foil';
+const STORAGE_ETERNAL = 'cardforge_eternal_cards';
+const STORAGE_FOIL_UPGRADES = 'cardforge_foil_upgrades';
+const STORAGE_PRESTIGE = 'cardforge_prestige_level';
+const STORAGE_MAX_FLOOR = 'cardforge_max_floor';
 
 function saveJson(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
@@ -56,6 +63,33 @@ export function getStationUpgradeCost(stationId: keyof StationLevels, currentLev
 
 export function getLibraryCapacity(libraryLevel: number): number {
   return 15 + libraryLevel * 5;
+}
+
+// ─── Prestige / foil ───────────────────────────────────────
+
+export interface FoilUpgrades {
+  hp_boost: number;
+  gold_boost: number;
+  start_card: number;
+  eternal_slot: number;
+}
+
+const DEFAULT_FOIL_UPGRADES: FoilUpgrades = { hp_boost: 0, gold_boost: 0, start_card: 0, eternal_slot: 0 };
+
+export function calculateFoilGain(maxFloor: number, bossKills: number): number {
+  return Math.floor(Math.pow(maxFloor, 1.5) * (1 + bossKills * 0.3));
+}
+
+export function getEffectiveStartingHp(foilUpgrades: FoilUpgrades): number {
+  return STARTING_HP + foilUpgrades.hp_boost * 5;
+}
+
+export function getEffectiveHandSize(foilUpgrades: FoilUpgrades): number {
+  return 5 + foilUpgrades.start_card;
+}
+
+export function getEternalSlots(foilUpgrades: FoilUpgrades): number {
+  return prestigeConfig.eternalCardSlots + foilUpgrades.eternal_slot;
 }
 
 // ─── Context type ──────────────────────────────────────────
@@ -112,6 +146,16 @@ interface GameStateContextType {
   // Offline / Welcome Back
   pendingOfflineProgress: OfflineProgress | null;
   dismissOfflineProgress: () => void;
+
+  // Prestige / Reforge
+  foil: number;
+  eternalCardIds: string[];
+  foilUpgrades: FoilUpgrades;
+  prestigeLevel: number;
+  maxFloorReached: number;
+  trackMaxFloor: (floor: number) => void;
+  buyFoilUpgrade: (upgradeId: string) => boolean;
+  executeReforge: (keepCardIds: string[]) => void;
 }
 
 const GameStateContext = createContext<GameStateContextType | null>(null);
@@ -163,6 +207,20 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     () => loadJson<InstalledGenerator[]>(STORAGE_GENERATORS) ?? [],
   );
 
+  const [foil, setFoil] = useState<number>(() => loadJson<number>(STORAGE_FOIL) ?? 0);
+  const [eternalCardIds, setEternalCardIds] = useState<string[]>(
+    () => loadJson<string[]>(STORAGE_ETERNAL) ?? [],
+  );
+  const [foilUpgrades, setFoilUpgrades] = useState<FoilUpgrades>(
+    () => loadJson<FoilUpgrades>(STORAGE_FOIL_UPGRADES) ?? DEFAULT_FOIL_UPGRADES,
+  );
+  const [prestigeLevel, setPrestigeLevel] = useState<number>(
+    () => loadJson<number>(STORAGE_PRESTIGE) ?? 0,
+  );
+  const [maxFloorReached, setMaxFloorReached] = useState<number>(
+    () => loadJson<number>(STORAGE_MAX_FLOOR) ?? 0,
+  );
+
   // Calculate offline progress on first load
   const [pendingOfflineProgress, setPendingOfflineProgress] = useState<OfflineProgress | null>(() => {
     const lastOnline = loadJson<number>(STORAGE_LAST_ONLINE);
@@ -194,6 +252,11 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => { saveJson(STORAGE_STATIONS, stationLevels); }, [stationLevels]);
   useEffect(() => { saveJson(STORAGE_ECONOMY, economyStats); }, [economyStats]);
   useEffect(() => { saveJson(STORAGE_GENERATORS, generators); }, [generators]);
+  useEffect(() => { saveJson(STORAGE_FOIL, foil); }, [foil]);
+  useEffect(() => { saveJson(STORAGE_ETERNAL, eternalCardIds); }, [eternalCardIds]);
+  useEffect(() => { saveJson(STORAGE_FOIL_UPGRADES, foilUpgrades); }, [foilUpgrades]);
+  useEffect(() => { saveJson(STORAGE_PRESTIGE, prestigeLevel); }, [prestigeLevel]);
+  useEffect(() => { saveJson(STORAGE_MAX_FLOOR, maxFloorReached); }, [maxFloorReached]);
 
   // Keep last-online timestamp fresh
   useEffect(() => {
@@ -387,6 +450,60 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // ─── Prestige / Reforge ──────────────────────────────────
+
+  const trackMaxFloor = useCallback((floor: number) => {
+    setMaxFloorReached((prev) => Math.max(prev, floor));
+  }, []);
+
+  const buyFoilUpgrade = useCallback((upgradeId: string): boolean => {
+    const def = prestigeConfig.foilUpgrades.find((u) => u.id === upgradeId);
+    if (!def) return false;
+
+    const currentStacks = foilUpgrades[upgradeId as keyof FoilUpgrades] ?? 0;
+    if (currentStacks >= def.maxStacks) return false;
+    if (foil < def.cost) return false;
+
+    setFoil((prev) => prev - def.cost);
+    setFoilUpgrades((prev) => ({
+      ...prev,
+      [upgradeId]: (prev[upgradeId as keyof FoilUpgrades] ?? 0) + 1,
+    }));
+    return true;
+  }, [foil, foilUpgrades]);
+
+  const executeReforge = useCallback((keepCardIds: string[]) => {
+    // Calculate foil gain
+    const foilGain = calculateFoilGain(maxFloorReached, economyStats.totalBossKills);
+
+    // Add foil
+    setFoil((prev) => prev + foilGain);
+
+    // Increment prestige level
+    setPrestigeLevel((prev) => prev + 1);
+
+    // Reset cycle state
+    const template = starterTemplates[0];
+    const starterIds: string[] = [];
+    for (const entry of template.cards) {
+      for (let i = 0; i < entry.count; i++) starterIds.push(entry.id);
+    }
+
+    // Eternal cards carry over into the starter deck + owned
+    const eternalOwned = [...keepCardIds];
+    setEternalCardIds(keepCardIds);
+
+    setDeckCardIds([...starterIds, ...eternalOwned]);
+    setOwnedCardIds([...starterIds, ...eternalOwned]);
+    setAiRulesRaw(template.aiRules);
+    setGold(0);
+    setShards(0);
+    setStationLevels(DEFAULT_STATIONS);
+    setGenerators([]);
+    setEconomyStats(DEFAULT_ECONOMY_STATS);
+    setMaxFloorReached(0);
+  }, [maxFloorReached, economyStats.totalBossKills]);
+
   // ─── Dismiss offline progress ───────────────────────────
 
   const dismissOfflineProgress = useCallback(() => {
@@ -452,6 +569,14 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
         removeGenerator,
         pendingOfflineProgress,
         dismissOfflineProgress,
+        foil,
+        eternalCardIds,
+        foilUpgrades,
+        prestigeLevel,
+        maxFloorReached,
+        trackMaxFloor,
+        buyFoilUpgrade,
+        executeReforge,
       }}
     >
       {children}
