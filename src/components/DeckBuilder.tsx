@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { starterTemplates, DECK_MIN, DECK_MAX, getCardById } from '../data/gameData';
 import { CardDetailModal } from './CardDetailModal';
+import { CardTooltip } from './CardTooltip';
 import { QuickTestPopup } from './QuickTestPopup';
-import type { Card, Rarity, CardType, Archetype } from '../models';
+import type { Card, Rarity, CardType, Archetype, AITarget } from '../models';
 
 // ─── Helpers ──────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ const TYPE_ICON: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────
 
 export function DeckBuilder() {
-  const { deckCards, deckCardIds, addCard, removeCardAt, loadTemplate, aiRules, ownedCardIds } = useGameState();
+  const { deckCards, deckCardIds, addCard, removeCardAt, loadTemplate, aiRules, addRule, ownedCardIds } = useGameState();
 
   const [filterType, setFilterType] = useState<CardType | 'all'>('all');
   const [filterArchetype, setFilterArchetype] = useState<Archetype | 'all'>('all');
@@ -37,6 +38,7 @@ export function DeckBuilder() {
   const [search, setSearch] = useState('');
   const [detailCard, setDetailCard] = useState<Card | null>(null);
   const [showTest, setShowTest] = useState(false);
+  const [missingRuleCard, setMissingRuleCard] = useState<Card | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
 
@@ -102,6 +104,28 @@ export function DeckBuilder() {
     return { types, archetypes, avgCost };
   }, [deckCards]);
 
+  const handleAddCard = (cardId: string) => {
+    addCard(cardId);
+    // Check if this card has an AI rule
+    const hasRule = aiRules.some((r) => r.cardId === cardId);
+    if (!hasRule) {
+      const card = getCardById(cardId);
+      if (card) setMissingRuleCard(card);
+    }
+  };
+
+  const handleCreateDefaultRule = (card: Card) => {
+    // Generate a sensible default rule based on card type
+    const rule = {
+      priority: aiRules.length + 1,
+      cardId: card.id,
+      condition: { parameter: 'always' as const },
+      target: (card.type === 'attack' ? 'lowest_hp' : 'self') as AITarget,
+    };
+    addRule(rule);
+    setMissingRuleCard(null);
+  };
+
   const handleRemoveOne = (cardId: string) => {
     // Find last occurrence and remove it
     const idx = deckCardIds.lastIndexOf(cardId);
@@ -126,6 +150,7 @@ export function DeckBuilder() {
             <button
               onClick={() => setShowTemplates(!showTemplates)}
               className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+              title="Replace your deck with a pre-built starter template"
             >
               Load Template
             </button>
@@ -167,7 +192,8 @@ export function DeckBuilder() {
             {deckDisplay.map(({ card, count }) => {
               const isPending = pendingRemoveId === card.id;
               return (
-                <div key={card.id}>
+                <CardTooltip card={card} key={card.id}>
+                <div>
                   <div
                     className={`flex items-center gap-2 px-2 py-1.5 rounded border ${
                       isPending ? 'border-red-500 bg-red-900/20' : `${RARITY_BORDER[card.rarity]} ${RARITY_BG[card.rarity]}`
@@ -211,6 +237,7 @@ export function DeckBuilder() {
                     </div>
                   )}
                 </div>
+                </CardTooltip>
               );
             })}
           </div>
@@ -243,26 +270,7 @@ export function DeckBuilder() {
                 <span><span className="text-purple-400">{'\u25CF'}</span> RCT {stats.types.reaction}</span>
               </div>
             </div>
-            {/* Archetype distribution bar */}
-            <div>
-              <p className="text-[10px] text-gray-600 mb-0.5">Archetypes</p>
-              <div className="flex h-2 rounded-full overflow-hidden bg-gray-800">
-                {deckCards.length > 0 && (
-                  <>
-                    <div className="bg-gray-500 transition-all" style={{ width: `${(stats.archetypes.neutral / deckCards.length) * 100}%` }} />
-                    <div className="bg-red-700 transition-all" style={{ width: `${(stats.archetypes.berserker / deckCards.length) * 100}%` }} />
-                    <div className="bg-green-700 transition-all" style={{ width: `${(stats.archetypes.poison / deckCards.length) * 100}%` }} />
-                    <div className="bg-sky-700 transition-all" style={{ width: `${(stats.archetypes.shield / deckCards.length) * 100}%` }} />
-                  </>
-                )}
-              </div>
-              <div className="flex gap-2 mt-0.5 text-[9px] text-gray-600">
-                <span><span className="text-gray-400">{'\u25CF'}</span> NTR {stats.archetypes.neutral}</span>
-                <span><span className="text-red-400">{'\u25CF'}</span> BRK {stats.archetypes.berserker}</span>
-                <span><span className="text-green-400">{'\u25CF'}</span> PSN {stats.archetypes.poison}</span>
-                <span><span className="text-sky-400">{'\u25CF'}</span> SHL {stats.archetypes.shield}</span>
-              </div>
-            </div>
+            {/* Archetype stats hidden — archetype bonuses are not yet functional */}
           </div>
         </div>
 
@@ -318,10 +326,10 @@ export function DeckBuilder() {
               {filteredCards.map((card) => {
                 const inDeck = deckCounts[card.id] || 0;
                 return (
+                  <CardTooltip card={card} key={card.id}>
                   <div
-                    key={card.id}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${RARITY_BORDER[card.rarity]} ${RARITY_BG[card.rarity]} cursor-pointer hover:brightness-125 transition-all ${inDeck > 0 ? 'ring-1 ring-blue-500/30' : ''}`}
-                    onClick={() => addCard(card.id)}
+                    onClick={() => handleAddCard(card.id)}
                     onContextMenu={(e) => { e.preventDefault(); setDetailCard(card); }}
                   >
                     {/* Cost orb */}
@@ -364,6 +372,7 @@ export function DeckBuilder() {
                       </span>
                     )}
                   </div>
+                  </CardTooltip>
                 );
               })}
             </div>
@@ -373,6 +382,30 @@ export function DeckBuilder() {
 
       {/* Detail modal */}
       {detailCard && <CardDetailModal card={detailCard} onClose={() => setDetailCard(null)} />}
+
+      {/* Missing AI rule notification */}
+      {missingRuleCard && (
+        <div className="fixed bottom-4 right-4 z-50 bg-gray-800 border border-amber-700/60 rounded-xl p-4 shadow-lg max-w-xs">
+          <p className="text-sm text-amber-400 font-medium mb-1">No AI Rule</p>
+          <p className="text-xs text-gray-300 mb-3">
+            <strong>{missingRuleCard.name}</strong> has no AI rule. The AI won&apos;t know when to play it.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleCreateDefaultRule(missingRuleCard)}
+              className="px-3 py-1.5 text-xs bg-amber-700 hover:bg-amber-600 text-white rounded-lg transition-colors"
+            >
+              Create default rule
+            </button>
+            <button
+              onClick={() => setMissingRuleCard(null)}
+              className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Quick test popup */}
       {showTest && (

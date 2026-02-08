@@ -138,7 +138,10 @@ export function PortalStation({ onBack }: PortalStationProps) {
           {/* Generators panel */}
           <div className="bg-gray-900 border border-cyan-800/50 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-cyan-300">{'\u2699\uFE0F'} Generators</h3>
+              <h3 className="text-lg font-bold text-cyan-300" title="Generators produce Gold and Shards while you're away. Install generator cards here to start earning idle resources.">
+                {'\u2699\uFE0F'} Generators
+                <span className="text-gray-600 text-xs ml-1.5 cursor-help" title="Generators produce Gold and Shards while you're away. Find them through crafting at the Anvil or rare dungeon drops.">?</span>
+              </h3>
               {(rates.goldPerMin > 0 || rates.shardsPerMin > 0) && (
                 <div className="flex items-center gap-3 text-xs">
                   {rates.goldPerMin > 0 && (
@@ -152,9 +155,20 @@ export function PortalStation({ onBack }: PortalStationProps) {
             </div>
 
             {generators.length === 0 && availableGenerators.length === 0 && (
-              <p className="text-sm text-gray-600 text-center py-4">
-                No generators owned. Find generator cards through crafting or dungeon rewards.
-              </p>
+              <div className="bg-gray-800/40 border border-dashed border-cyan-900/50 rounded-lg p-4 text-center space-y-2">
+                <p className="text-sm text-gray-500">No generators installed yet</p>
+                <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 opacity-60">
+                  <p className="text-xs text-cyan-400 font-medium">Rusty Automaton</p>
+                  <p className="text-[10px] text-gray-500">Generates 1 G/min while idle</p>
+                  <span className="text-[9px] text-gray-600 bg-gray-900 px-2 py-0.5 rounded mt-1 inline-block">
+                    Locked — craft at the Anvil (requires Anvil Lv2) or find in dungeon chests
+                  </span>
+                </div>
+                <p className="text-[10px] text-gray-600 leading-relaxed">
+                  Generators are the core of idle progression. They produce Gold and Shards while you&apos;re offline.
+                  Upgrade the Anvil to Lv2 to unlock crafting, or find rare generator cards in dungeon chests.
+                </p>
+              </div>
             )}
 
             {/* Installed generators */}
