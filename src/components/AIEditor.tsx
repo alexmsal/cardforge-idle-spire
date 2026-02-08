@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { QuickTestPopup } from './QuickTestPopup';
-import { MAX_AI_RULES } from '../data/gameData';
-import type { AIRule, AICondition, AITarget } from '../models';
+import { MAX_AI_RULES, getCardById } from '../data/gameData';
+import type { AIRule, AICondition, AITarget, Card } from '../models';
 
 // ─── Constants ────────────────────────────────────────────
 
@@ -231,6 +231,47 @@ export function AIEditor() {
     addRule(newRule);
   };
 
+  // Cards in deck that have no AI rule
+  const uncoveredCards = useMemo(() => {
+    const coveredIds = new Set(aiRules.map((r) => r.cardId));
+    const seen = new Set<string>();
+    const result: Card[] = [];
+    for (const id of deckCardIds) {
+      if (seen.has(id) || coveredIds.has(id)) continue;
+      seen.add(id);
+      const card = getCardById(id);
+      if (card) result.push(card);
+    }
+    return result;
+  }, [deckCardIds, aiRules]);
+
+  const handleQuickAddRule = (card: Card) => {
+    const hasHeal = card.effects.some((e) => e.type === 'heal');
+    let condition: AICondition;
+    let target: AITarget;
+
+    if (hasHeal) {
+      condition = { parameter: 'hp_percent', operator: '<', value: 50 };
+      target = 'self';
+    } else if (card.type === 'defense') {
+      condition = { parameter: 'hp_percent', operator: '<', value: 70 };
+      target = 'self';
+    } else if (card.type === 'attack') {
+      condition = { parameter: 'always' };
+      target = 'nearest';
+    } else {
+      condition = { parameter: 'always' };
+      target = 'self';
+    }
+
+    addRule({
+      priority: aiRules.length + 1,
+      condition,
+      cardId: card.id,
+      target,
+    });
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -276,6 +317,30 @@ export function AIEditor() {
           />
         ))}
 
+        {/* Uncovered cards warning */}
+        {uncoveredCards.length > 0 && (
+          <div className="border border-amber-800/50 bg-amber-900/10 rounded-lg p-3">
+            <p className="text-xs text-amber-400 font-medium mb-2">
+              {'\u26A0\uFE0F'} Cards without rules — AI will not play these:
+            </p>
+            <div className="space-y-1">
+              {uncoveredCards.map((card) => (
+                <div key={card.id} className="flex items-center justify-between">
+                  <span className="text-xs text-gray-300">{card.name}</span>
+                  {aiRules.length < MAX_AI_RULES && (
+                    <button
+                      onClick={() => handleQuickAddRule(card)}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 transition-colors px-1.5 py-0.5 rounded bg-amber-900/30 hover:bg-amber-900/50"
+                    >
+                      + Add Rule
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Add rule button */}
         {aiRules.length < MAX_AI_RULES && (
           <button
@@ -285,13 +350,6 @@ export function AIEditor() {
             + Add Rule
           </button>
         )}
-      </div>
-
-      {/* Deck info footer */}
-      <div className="border-t border-gray-800 px-6 py-2 flex-shrink-0">
-        <p className="text-[10px] text-gray-600">
-          Deck: {deckCardIds.length} cards. Showing {cardOptions.length} unique cards from your collection.
-        </p>
       </div>
 
       {/* Quick test */}
