@@ -56,12 +56,14 @@ export function CardTooltip({ card, children }: CardTooltipProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleEnter = () => {
-    // Use the first child element for positioning since the wrapper uses display:contents
-    const el = wrapRef.current?.children[0] as HTMLElement | undefined;
+    const el = wrapRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const spaceRight = window.innerWidth - rect.right;
-    const x = spaceRight > 280 ? rect.right + 8 : rect.left - 268;
+    // Show tooltip to the right if card is in the left half of viewport, otherwise left
+    const cardCenterX = rect.left + rect.width / 2;
+    const x = cardCenterX < window.innerWidth / 2
+      ? rect.right + 8
+      : rect.left - 268;
     const y = Math.min(rect.top, window.innerHeight - 300);
     setPos({ x, y });
     timerRef.current = setTimeout(() => setShow(true), 300);
@@ -78,7 +80,7 @@ export function CardTooltip({ card, children }: CardTooltipProps) {
   const typeColor = TYPE_COLOR[card.type] ?? 'text-gray-400';
 
   return (
-    <div ref={wrapRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave} className="contents">
+    <div ref={wrapRef} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       {children}
       {show && (
         <div

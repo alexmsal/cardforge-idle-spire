@@ -79,7 +79,7 @@ export function NavBar({ onResetTutorial }: NavBarProps) {
       ) : (
         <span
           className="px-4 py-2.5 text-sm font-medium text-gray-700 border-b-2 border-transparent cursor-not-allowed"
-          title={`Locked \u2014 Defeat the Crypt Lord (Boss kills: ${economyStats.totalBossKills}/1)`}
+          title="Unlocks after defeating the Crypt Lord (Boss on Floor 10)"
         >
           <span className="mr-1.5">{'\u2728'}</span>
           Reforge

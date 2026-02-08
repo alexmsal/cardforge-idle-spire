@@ -150,7 +150,7 @@ export function DeckBuilder() {
             <button
               onClick={() => setShowTemplates(!showTemplates)}
               className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
-              title="Replace your deck with a pre-built starter template"
+              title="Load a pre-built deck template to quickly set up your cards"
             >
               Load Template
             </button>
