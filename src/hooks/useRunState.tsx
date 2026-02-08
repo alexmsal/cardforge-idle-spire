@@ -127,10 +127,32 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
   }, [deckCardIds, aiRules, foilUpgrades]);
 
   const abandonRun = useCallback(() => {
+    // Persist any cards acquired during the run before clearing
+    if (run) {
+      const newCards: string[] = [];
+      const startingCounts: Record<string, number> = {};
+      for (const id of deckCardIds) {
+        startingCounts[id] = (startingCounts[id] ?? 0) + 1;
+      }
+      const runCounts: Record<string, number> = {};
+      for (const id of run.deckCardIds) {
+        runCounts[id] = (runCounts[id] ?? 0) + 1;
+      }
+      for (const id of Object.keys(runCounts)) {
+        const extra = runCounts[id] - (startingCounts[id] ?? 0);
+        for (let i = 0; i < extra; i++) {
+          newCards.push(id);
+        }
+      }
+      if (newCards.length > 0) {
+        addOwnedCards(newCards);
+      }
+      setNewCardsFromRun(newCards);
+    }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, []);
+  }, [run, deckCardIds, addOwnedCards]);
 
   // ─── Map navigation ─────────────────────────────────────
 

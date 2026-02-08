@@ -27,17 +27,20 @@ interface ActionFeedEntry {
 }
 
 function ActionFeed({ entries }: { entries: ActionFeedEntry[] }) {
-  // Show last 4 entries
-  const visible = entries.slice(-4);
+  const visible = entries.slice(-5);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [entries.length]);
 
   return (
-    <div className="space-y-1">
+    <div className="overflow-y-auto space-y-1 scrollbar-thin" style={{ maxHeight: '150px' }}>
       {visible.map((item, idx) => {
         const isLatest = idx === visible.length - 1;
         const msg = item.entry.message;
         const phase = item.entry.phase;
 
-        // Detect damage, block, heal in the message for coloring
         const hasDamage = /\d+\s*(damage|dmg|to player|to \w)/i.test(msg) || /deals \d+/i.test(msg);
         const hasBlock = /block|blocked/i.test(msg);
         const hasHeal = /heal/i.test(msg);
@@ -68,15 +71,11 @@ function ActionFeed({ entries }: { entries: ActionFeedEntry[] }) {
         } else if (phase === 'enemy') {
           borderColor = 'border-red-800/50';
           textColor = 'text-red-300';
-          if (hasDamage) {
-            bgColor = isLatest ? 'bg-red-900/40' : 'bg-red-900/20';
-          }
+          if (hasDamage) bgColor = isLatest ? 'bg-red-900/40' : 'bg-red-900/20';
         } else if (phase === 'system') {
           borderColor = 'border-yellow-800/50';
           textColor = isDefeated ? 'text-yellow-300' : 'text-yellow-400';
-          if (isDefeated) {
-            bgColor = isLatest ? 'bg-yellow-900/30' : 'bg-yellow-900/15';
-          }
+          if (isDefeated) bgColor = isLatest ? 'bg-yellow-900/30' : 'bg-yellow-900/15';
         }
 
         return (
@@ -90,6 +89,7 @@ function ActionFeed({ entries }: { entries: ActionFeedEntry[] }) {
           </div>
         );
       })}
+      <div ref={bottomRef} />
     </div>
   );
 }
