@@ -69,10 +69,10 @@ function getEffectSummary(card: Card): string {
       case 'thorn': return `+${val} thorn`;
       case 'energy': return `+${val} energy`;
       case 'draw': return `draw ${val}`;
-      case 'damage_self': return `-${val} self`;
+      case 'damage_self': return `-${val} HP self`;
       case 'damage_ramp': return `+${val}/play`;
       case 'damage_on_hit': return `${val} retl`;
-      case 'block_retain': return 'retain blk';
+      case 'block_retain': return 'Retain Block';
       case 'corpse_explode': return 'explode';
       default: return e.type;
     }

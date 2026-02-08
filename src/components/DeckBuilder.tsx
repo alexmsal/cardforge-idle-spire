@@ -364,10 +364,10 @@ export function DeckBuilder() {
                             case 'thorn': return `+${v} thorn`;
                             case 'draw': return `draw ${v}`;
                             case 'energy': return `+${v} energy`;
-                            case 'damage_self': return `-${v} self`;
+                            case 'damage_self': return `-${v} HP self`;
                             case 'damage_ramp': return `+${v}/play`;
                             case 'damage_on_hit': return `${v} retl`;
-                            case 'block_retain': return 'retain blk';
+                            case 'block_retain': return 'Retain Block';
                             case 'corpse_explode': return 'explode';
                             default: return e.type;
                           }

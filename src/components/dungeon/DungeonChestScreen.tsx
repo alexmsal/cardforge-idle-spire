@@ -31,10 +31,10 @@ function formatEffectShort(eff: { type: string; value: number | boolean }): stri
     case 'thorn': return `+${v} thorn`;
     case 'energy': return `+${v} energy`;
     case 'draw': return `draw ${v}`;
-    case 'damage_self': return `-${v} self`;
+    case 'damage_self': return `-${v} HP self`;
     case 'damage_ramp': return `+${v}/play`;
     case 'damage_on_hit': return `${v} retl`;
-    case 'block_retain': return 'retain blk';
+    case 'block_retain': return 'Retain Block';
     case 'corpse_explode': return 'explode';
     default: return `${eff.type}`;
   }
