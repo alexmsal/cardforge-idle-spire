@@ -80,9 +80,9 @@ export function generateDungeonMap(config: CryptConfig): DungeonMap {
 }
 
 function pickNodeType(
-  floorNum: number,
+  _floorNum: number,
   nodeIndex: number,
-  nodeCount: number,
+  _nodeCount: number,
   override: FloorOverride | undefined,
   config: CryptConfig,
 ): NodeType {

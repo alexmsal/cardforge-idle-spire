@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGameState } from '../../hooks/useGameState';
-import { getCardById, craftingConfig, allCards, getRandomCard } from '../../data/gameData';
+import { getCardById, craftingConfig, getRandomCard } from '../../data/gameData';
 import type { Card, Rarity } from '../../models';
 
 interface AnvilStationProps {

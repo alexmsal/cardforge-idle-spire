@@ -6,10 +6,12 @@ import {
   getCardById,
   DECK_MAX,
   MAX_AI_RULES,
-  craftingConfig,
   stationsConfig,
+  idleConfig,
 } from '../data/gameData';
 import type { StarterDeckTemplate } from '../data/gameData';
+import type { InstalledGenerator, EconomyStats, OfflineProgress } from '../engine/IdleEngine';
+import { DEFAULT_ECONOMY_STATS, calculateOfflineProgress } from '../engine/IdleEngine';
 
 // ─── Storage keys ──────────────────────────────────────────
 
@@ -19,6 +21,9 @@ const STORAGE_OWNED = 'cardforge_owned_ids';
 const STORAGE_SHARDS = 'cardforge_shards';
 const STORAGE_GOLD = 'cardforge_gold';
 const STORAGE_STATIONS = 'cardforge_stations';
+const STORAGE_ECONOMY = 'cardforge_economy';
+const STORAGE_GENERATORS = 'cardforge_generators';
+const STORAGE_LAST_ONLINE = 'cardforge_last_online';
 
 function saveJson(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
@@ -90,6 +95,23 @@ interface GameStateContextType {
   stationLevels: StationLevels;
   upgradeStation: (stationId: keyof StationLevels) => boolean;
   libraryCapacity: number;
+
+  // Economy tracking
+  economyStats: EconomyStats;
+  trackGoldEarned: (amount: number) => void;
+  trackGoldSpent: (amount: number) => void;
+  trackShardsEarned: (amount: number) => void;
+  trackShardsSpent: (amount: number) => void;
+  trackRunCompleted: (bossKill: boolean) => void;
+
+  // Generators
+  generators: InstalledGenerator[];
+  installGenerator: (cardId: string) => void;
+  removeGenerator: (cardId: string) => void;
+
+  // Offline / Welcome Back
+  pendingOfflineProgress: OfflineProgress | null;
+  dismissOfflineProgress: () => void;
 }
 
 const GameStateContext = createContext<GameStateContextType | null>(null);
@@ -133,6 +155,36 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     () => loadJson<StationLevels>(STORAGE_STATIONS) ?? DEFAULT_STATIONS,
   );
 
+  const [economyStats, setEconomyStats] = useState<EconomyStats>(
+    () => loadJson<EconomyStats>(STORAGE_ECONOMY) ?? DEFAULT_ECONOMY_STATS,
+  );
+
+  const [generators, setGenerators] = useState<InstalledGenerator[]>(
+    () => loadJson<InstalledGenerator[]>(STORAGE_GENERATORS) ?? [],
+  );
+
+  // Calculate offline progress on first load
+  const [pendingOfflineProgress, setPendingOfflineProgress] = useState<OfflineProgress | null>(() => {
+    const lastOnline = loadJson<number>(STORAGE_LAST_ONLINE);
+    if (!lastOnline) return null;
+    const savedGenerators = loadJson<InstalledGenerator[]>(STORAGE_GENERATORS) ?? [];
+    if (savedGenerators.length === 0) return null;
+    const now = Date.now();
+    const maxOfflineMs = idleConfig.maxOfflineHours * 60 * 60 * 1000;
+    const progress = calculateOfflineProgress(
+      savedGenerators,
+      lastOnline,
+      now,
+      idleConfig.generatorDegradationPerDay,
+      maxOfflineMs,
+      idleConfig.offlineRewardMultiplier,
+    );
+    if (progress.goldGenerated === 0 && progress.shardsGenerated === 0 && progress.generatorsExpired.length === 0) {
+      return null;
+    }
+    return progress;
+  });
+
   // Persist on change
   useEffect(() => { saveJson(STORAGE_DECK, deckCardIds); }, [deckCardIds]);
   useEffect(() => { saveJson(STORAGE_AI, aiRules); }, [aiRules]);
@@ -140,6 +192,15 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => { saveJson(STORAGE_GOLD, gold); }, [gold]);
   useEffect(() => { saveJson(STORAGE_SHARDS, shards); }, [shards]);
   useEffect(() => { saveJson(STORAGE_STATIONS, stationLevels); }, [stationLevels]);
+  useEffect(() => { saveJson(STORAGE_ECONOMY, economyStats); }, [economyStats]);
+  useEffect(() => { saveJson(STORAGE_GENERATORS, generators); }, [generators]);
+
+  // Keep last-online timestamp fresh
+  useEffect(() => {
+    saveJson(STORAGE_LAST_ONLINE, Date.now());
+    const interval = setInterval(() => saveJson(STORAGE_LAST_ONLINE, Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Resolve IDs to Card objects
   const deckCards: Card[] = deckCardIds.map((id) => getCardById(id)).filter((c): c is Card => c !== undefined);
@@ -284,6 +345,74 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
     return true;
   }, [gold, stationLevels]);
 
+  // ─── Economy tracking ─────────────────────────────────────
+
+  const trackGoldEarned = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalGoldEarned: prev.totalGoldEarned + amount }));
+  }, []);
+
+  const trackGoldSpent = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalGoldSpent: prev.totalGoldSpent + amount }));
+  }, []);
+
+  const trackShardsEarned = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalShardsEarned: prev.totalShardsEarned + amount }));
+  }, []);
+
+  const trackShardsSpent = useCallback((amount: number) => {
+    setEconomyStats((prev) => ({ ...prev, totalShardsSpent: prev.totalShardsSpent + amount }));
+  }, []);
+
+  const trackRunCompleted = useCallback((bossKill: boolean) => {
+    setEconomyStats((prev) => ({
+      ...prev,
+      totalRunsCompleted: prev.totalRunsCompleted + 1,
+      totalBossKills: prev.totalBossKills + (bossKill ? 1 : 0),
+    }));
+  }, []);
+
+  // ─── Generators ─────────────────────────────────────────
+
+  const installGenerator = useCallback((cardId: string) => {
+    setGenerators((prev) => [...prev, { cardId, installedAt: Date.now() }]);
+  }, []);
+
+  const removeGenerator = useCallback((cardId: string) => {
+    setGenerators((prev) => {
+      const idx = prev.findIndex((g) => g.cardId === cardId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next.splice(idx, 1);
+      return next;
+    });
+  }, []);
+
+  // ─── Dismiss offline progress ───────────────────────────
+
+  const dismissOfflineProgress = useCallback(() => {
+    if (!pendingOfflineProgress) return;
+    // Apply the offline rewards
+    if (pendingOfflineProgress.goldGenerated > 0) {
+      setGold((prev) => prev + pendingOfflineProgress.goldGenerated);
+      setEconomyStats((prev) => ({
+        ...prev,
+        totalGoldEarned: prev.totalGoldEarned + pendingOfflineProgress.goldGenerated,
+      }));
+    }
+    if (pendingOfflineProgress.shardsGenerated > 0) {
+      setShards((prev) => prev + pendingOfflineProgress.shardsGenerated);
+      setEconomyStats((prev) => ({
+        ...prev,
+        totalShardsEarned: prev.totalShardsEarned + pendingOfflineProgress.shardsGenerated,
+      }));
+    }
+    // Remove expired generators
+    if (pendingOfflineProgress.generatorsExpired.length > 0) {
+      setGenerators((prev) => prev.filter((g) => !pendingOfflineProgress.generatorsExpired.includes(g.cardId)));
+    }
+    setPendingOfflineProgress(null);
+  }, [pendingOfflineProgress]);
+
   return (
     <GameStateContext.Provider
       value={{
@@ -312,6 +441,17 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
         stationLevels,
         upgradeStation,
         libraryCapacity,
+        economyStats,
+        trackGoldEarned,
+        trackGoldSpent,
+        trackShardsEarned,
+        trackShardsSpent,
+        trackRunCompleted,
+        generators,
+        installGenerator,
+        removeGenerator,
+        pendingOfflineProgress,
+        dismissOfflineProgress,
       }}
     >
       {children}

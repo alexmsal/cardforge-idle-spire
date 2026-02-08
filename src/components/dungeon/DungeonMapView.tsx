@@ -98,7 +98,7 @@ function MapNodeButton({ node, isCurrent, onClick }: { node: MapNode; isCurrent:
   );
 }
 
-function ConnectionLines({ fromNodes, toNodes }: { fromNodes: MapNode[]; toNodes: MapNode[] }) {
+function ConnectionLines({ fromNodes, toNodes: _toNodes }: { fromNodes: MapNode[]; toNodes: MapNode[] }) {
   // Simple text-based connections
   const hasConnections = fromNodes.some((n) => n.connections.length > 0);
   if (!hasConnections) return null;

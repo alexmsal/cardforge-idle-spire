@@ -141,4 +141,5 @@ export interface RunSummary {
   finalHp: number;
   maxHp: number;
   deckSize: number;
+  bossKill: boolean;
 }

@@ -1043,6 +1043,53 @@
         "2": { "block": 34, "thorn": 4, "dex": 2 },
         "3": { "block": 44, "thorn": 5, "dex": 2 }
       }
+    },
+
+    {
+      "id": "gold_mine",
+      "name": "Gold Mine",
+      "rarity": "common",
+      "type": "generator",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": ["generator"],
+      "effects": [
+        { "type": "generate_gold", "value": 2, "target": "self" }
+      ],
+      "ppCalc": "Generator — 2 gold/min",
+      "ppTotal": 0,
+      "designNote": "Produces 2 gold per minute while idle. Degrades 10% per day."
+    },
+    {
+      "id": "shard_extractor",
+      "name": "Shard Extractor",
+      "rarity": "uncommon",
+      "type": "generator",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": ["generator"],
+      "effects": [
+        { "type": "generate_shards", "value": 1, "target": "self" }
+      ],
+      "ppCalc": "Generator — 1 shard/min",
+      "ppTotal": 0,
+      "designNote": "Produces 1 shard per minute while idle. Degrades 10% per day."
+    },
+    {
+      "id": "essence_well",
+      "name": "Essence Well",
+      "rarity": "rare",
+      "type": "generator",
+      "cost": 0,
+      "archetype": "neutral",
+      "keywords": ["generator"],
+      "effects": [
+        { "type": "generate_gold", "value": 3, "target": "self" },
+        { "type": "generate_shards", "value": 1, "target": "self" }
+      ],
+      "ppCalc": "Generator — 3 gold + 1 shard/min",
+      "ppTotal": 0,
+      "designNote": "Produces 3 gold and 1 shard per minute while idle. Degrades 10% per day."
     }
   ]
 }

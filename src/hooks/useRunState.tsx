@@ -4,7 +4,6 @@ import type {
   RunState,
   RunPhase,
   PendingReward,
-  PendingEvent,
   MapNode,
   DungeonMap,
   ShopState,
@@ -22,7 +21,6 @@ import {
   chestRewardsConfig,
   gameEvents,
   getEnemyById,
-  getCardById,
   getRandomCard,
   getRandomCardChoices,
   allEnemies,
@@ -88,7 +86,7 @@ const RunStateContext = createContext<RunStateContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────
 
 export function RunStateProvider({ children }: { children: ReactNode }) {
-  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard } = useGameState();
+  const { deckCardIds, aiRules, addGold: addPersistentGold, addOwnedCard, trackGoldEarned, trackRunCompleted } = useGameState();
   const [run, setRun] = useState<RunState | null>(null);
 
   // Transient state for shop/chest (not persisted in run)
@@ -598,18 +596,22 @@ export function RunStateProvider({ children }: { children: ReactNode }) {
       finalHp: run.hp,
       maxHp: run.maxHp,
       deckSize: run.deckCardIds.length,
+      bossKill: run.phase === 'victory',
     };
   }, [run]);
 
   const returnToMap = useCallback(() => {
-    // Transfer earned gold to persistent state
+    // Transfer earned gold to persistent state + track economy
     if (run) {
       addPersistentGold(run.goldEarned);
+      trackGoldEarned(run.goldEarned);
+      const isBossKill = run.phase === 'victory';
+      trackRunCompleted(isBossKill);
     }
     setRun(null);
     setShopState(null);
     setChestReward(null);
-  }, [run, addPersistentGold]);
+  }, [run, addPersistentGold, trackGoldEarned, trackRunCompleted]);
 
   return (
     <RunStateContext.Provider

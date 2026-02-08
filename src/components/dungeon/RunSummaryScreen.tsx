@@ -26,14 +26,23 @@ export function RunSummaryScreen({ summary, onReturn }: RunSummaryScreenProps) {
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="space-y-2 mb-6">
+        {/* Combat Stats */}
+        <div className="space-y-2 mb-4">
+          <SectionLabel text="Combat" />
           <StatRow label="Floors Cleared" value={`${summary.floorsCleared}/10`} />
           <StatRow label="Battles Won" value={String(summary.battlesWon)} />
           <StatRow label="Elites Slain" value={String(summary.elitesSlain)} />
-          <StatRow label="Gold Earned" value={String(summary.goldEarned)} highlight="text-yellow-400" />
+          {summary.bossKill && (
+            <StatRow label="Boss Defeated" value="Yes" highlight="text-purple-400" />
+          )}
           <StatRow label="Final HP" value={`${summary.finalHp}/${summary.maxHp}`} />
           <StatRow label="Final Deck Size" value={String(summary.deckSize)} />
+        </div>
+
+        {/* Economy Breakdown */}
+        <div className="space-y-2 mb-6">
+          <SectionLabel text="Economy" />
+          <StatRow label="Gold Earned" value={`+${summary.goldEarned}`} highlight="text-yellow-400" />
         </div>
 
         {/* Return */}
@@ -46,10 +55,21 @@ export function RunSummaryScreen({ summary, onReturn }: RunSummaryScreenProps) {
                 : 'bg-gray-700 hover:bg-gray-600'
             }`}
           >
-            Return to Menu
+            Collect & Return
           </button>
+          <p className="text-[10px] text-gray-600 mt-2">
+            Gold will be added to your persistent balance.
+          </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div className="pt-2">
+      <span className="text-[10px] text-gray-500 uppercase tracking-wider">{text}</span>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function DungeonScreen() {
   const { deckCardIds, aiRules } = useGameState();
   const {
     run,
-    isRunActive,
+    isRunActive: _isRunActive,
     startRun,
     abandonRun,
     selectNode,

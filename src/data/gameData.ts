@@ -49,6 +49,19 @@ export const stationsConfig = cfg.gameConfig.stations as Record<
   { name: string; baseCost: number; costExponent: number; maxLevel: number; perLevel: string }
 >;
 
+// ─── Idle / generator data ──────────────────────────────
+
+export const idleConfig = cfg.gameConfig.idle as {
+  maxOfflineHours: number;
+  offlineRewardMultiplier: number;
+  generatorDegradationPerDay: number;
+  battleDurationSeconds: number;
+  speedMultipliers: number[];
+};
+
+export const generatorCards: Card[] = allCards.filter((c) => c.type === 'generator');
+const combatCards: Card[] = allCards.filter((c) => c.type !== 'generator');
+
 // ─── Helpers ─────────────────────────────────────────────
 
 export function buildDeckFromTemplate(template: StarterDeckTemplate): Card[] {
@@ -77,12 +90,12 @@ export function getCardsByRarity(rarity: Rarity): Card[] {
 }
 
 export function getRandomCard(rarity?: string): Card {
-  const pool = rarity ? allCards.filter((c) => c.rarity === rarity) : allCards;
+  const pool = rarity ? combatCards.filter((c) => c.rarity === rarity) : combatCards;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export function getRandomCardChoices(count: number, rarity?: string): Card[] {
-  const pool = rarity ? allCards.filter((c) => c.rarity === rarity) : allCards;
+  const pool = rarity ? combatCards.filter((c) => c.rarity === rarity) : combatCards;
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
