@@ -38,6 +38,7 @@ export function DeckBuilder() {
   const [detailCard, setDetailCard] = useState<Card | null>(null);
   const [showTest, setShowTest] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
 
   // Count occurrences of each card id in deck
   const deckCounts = useMemo(() => {
@@ -104,7 +105,10 @@ export function DeckBuilder() {
   const handleRemoveOne = (cardId: string) => {
     // Find last occurrence and remove it
     const idx = deckCardIds.lastIndexOf(cardId);
-    if (idx >= 0) removeCardAt(idx);
+    if (idx >= 0) {
+      removeCardAt(idx);
+      setPendingRemoveId(null);
+    }
   };
 
   return (
@@ -160,31 +164,55 @@ export function DeckBuilder() {
             {deckDisplay.length === 0 && (
               <p className="text-sm text-gray-600 italic text-center py-8">Deck is empty. Add cards from the library.</p>
             )}
-            {deckDisplay.map(({ card, count }) => (
-              <div
-                key={card.id}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded border ${RARITY_BORDER[card.rarity]} ${RARITY_BG[card.rarity]} cursor-pointer hover:brightness-125 transition-all group`}
-                onClick={() => handleRemoveOne(card.id)}
-                onContextMenu={(e) => { e.preventDefault(); setDetailCard(card); }}
-              >
-                {/* Cost */}
-                <span className="w-5 h-5 rounded-full bg-blue-700 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-                  {card.cost}
-                </span>
-                {/* Type icon */}
-                <span className="text-xs flex-shrink-0">{TYPE_ICON[card.type] || ''}</span>
-                {/* Name */}
-                <span className="text-xs flex-1 truncate">{card.name}</span>
-                {/* Count */}
-                {count > 1 && (
-                  <span className="text-[10px] text-gray-500 font-mono">x{count}</span>
-                )}
-                {/* Remove hint */}
-                <span className="text-[10px] text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                  -
-                </span>
-              </div>
-            ))}
+            {deckDisplay.map(({ card, count }) => {
+              const isPending = pendingRemoveId === card.id;
+              return (
+                <div key={card.id}>
+                  <div
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded border ${
+                      isPending ? 'border-red-500 bg-red-900/20' : `${RARITY_BORDER[card.rarity]} ${RARITY_BG[card.rarity]}`
+                    } cursor-pointer hover:brightness-125 transition-all group`}
+                    onClick={() => setPendingRemoveId(isPending ? null : card.id)}
+                    onContextMenu={(e) => { e.preventDefault(); setDetailCard(card); }}
+                  >
+                    {/* Cost */}
+                    <span className="w-5 h-5 rounded-full bg-blue-700 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                      {card.cost}
+                    </span>
+                    {/* Type icon */}
+                    <span className="text-xs flex-shrink-0">{TYPE_ICON[card.type] || ''}</span>
+                    {/* Name */}
+                    <span className="text-xs flex-1 truncate">{card.name}</span>
+                    {/* Count */}
+                    {count > 1 && (
+                      <span className="text-[10px] text-gray-500 font-mono">x{count}</span>
+                    )}
+                    {/* Remove hint */}
+                    <span className="text-[10px] text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      -
+                    </span>
+                  </div>
+                  {/* Inline confirmation */}
+                  {isPending && (
+                    <div className="flex items-center gap-2 px-2 py-1 bg-red-900/10 rounded-b border border-t-0 border-red-800/50">
+                      <span className="text-[10px] text-red-400 flex-1">Remove {card.name}?</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRemoveOne(card.id); }}
+                        className="px-2 py-0.5 text-[10px] bg-red-700 hover:bg-red-600 text-white rounded transition-colors"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPendingRemoveId(null); }}
+                        className="px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                      >
+                        No
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Deck stats */}
