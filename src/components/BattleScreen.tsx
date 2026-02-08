@@ -306,8 +306,8 @@ export function BattleScreen() {
           )}
         </div>
 
-        {/* Log sidebar */}
-        <aside className="w-72 border-l border-gray-800 bg-gray-900/50 flex flex-col min-h-0 overflow-hidden flex-shrink-0">
+        {/* Log sidebar - constrained height so it never pushes the battle arena */}
+        <aside className="w-72 border-l border-gray-800 bg-gray-900/50 flex flex-col flex-shrink-0" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <AIDecisionLog
             log={state?.log ?? []}
             currentTurn={state?.turn ?? 0}

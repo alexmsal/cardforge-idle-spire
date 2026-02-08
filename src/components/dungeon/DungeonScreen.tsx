@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRunState } from '../../hooks/useRunState';
 import { useGameState } from '../../hooks/useGameState';
 import { DungeonMapView } from './DungeonMapView';
@@ -13,10 +14,11 @@ import { CardRemoveScreen } from './CardRemoveScreen';
 import { CardUpgradeScreen } from './CardUpgradeScreen';
 import { RunSummaryScreen } from './RunSummaryScreen';
 import type { BattleSummary, EnemyDef } from '../../models';
-import { gameEvents } from '../../data/gameData';
+import { gameEvents, getCardById } from '../../data/gameData';
 
 export function DungeonScreen() {
   const { deckCardIds, aiRules } = useGameState();
+  const navigate = useNavigate();
   const {
     run,
     isRunActive: _isRunActive,
@@ -43,6 +45,8 @@ export function DungeonScreen() {
     upgradeCard,
     getRunSummary,
     returnToMap,
+    newCardsFromRun,
+    dismissNewCards,
   } = useRunState();
 
   // Cache enemy defs for current battle to avoid regenerating on re-render
@@ -99,8 +103,53 @@ export function DungeonScreen() {
   // ─── No run: show start screen ─────────────────────────
 
   if (!run) {
+    // Resolve new card names for the toast
+    const newCardNames = newCardsFromRun.length > 0
+      ? [...new Set(newCardsFromRun)].map((id) => {
+          const card = getCardById(id);
+          return card ? card.name : id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        })
+      : [];
+
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8">
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 relative">
+        {/* New cards toast */}
+        {newCardNames.length > 0 && (
+          <div className="absolute top-4 right-4 z-50 bg-gray-800 border border-emerald-700/60 rounded-xl p-4 shadow-lg shadow-emerald-900/30 max-w-xs animate-fade-in">
+            <style>{`
+              @keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+              .animate-fade-in { animation: fade-in 0.3s ease-out; }
+            `}</style>
+            <div className="flex items-start gap-3">
+              <span className="text-2xl flex-shrink-0">+</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-emerald-400 mb-1">
+                  New Cards Acquired!
+                </p>
+                <ul className="text-xs text-gray-300 space-y-0.5 mb-3">
+                  {newCardNames.map((name, i) => (
+                    <li key={i} className="truncate">{name}</li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { dismissNewCards(); navigate('/deck'); }}
+                    className="px-3 py-1.5 text-xs bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                  >
+                    Go to Deck Builder
+                  </button>
+                  <button
+                    onClick={dismissNewCards}
+                    className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center">
           <span className="text-5xl block mb-4">{'\uD83C\uDFF0'}</span>
           <h2 className="text-2xl font-bold text-white mb-2">The Crypt</h2>

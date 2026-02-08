@@ -159,29 +159,27 @@ function RuleRow({ rule, index, cardOptions, onUpdate, onRemove, onDragStart, on
 // ─── Main Component ───────────────────────────────────────
 
 export function AIEditor() {
-  const { deckCards, deckCardIds, aiRules, addRule, updateRule, removeRule, moveRule } = useGameState();
+  const { deckCards, deckCardIds, ownedCards, aiRules, addRule, updateRule, removeRule, moveRule } = useGameState();
   const [showTest, setShowTest] = useState(false);
   const dragFrom = useRef<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  // Unique cards in deck for dropdown — pull dynamically from current deck IDs
-  // to ensure ALL cards in the active deck appear, even if card data is stale
+  // Card dropdown: show ALL owned cards so rules can reference any card the player has
   const cardOptions = (() => {
     const seen = new Set<string>();
     const options: { id: string; name: string }[] = [];
-    // Primary: use resolved Card objects from the deck
-    for (const card of deckCards) {
+    // Primary: all owned cards (full collection)
+    for (const card of ownedCards) {
       if (!seen.has(card.id)) {
         seen.add(card.id);
         options.push({ id: card.id, name: card.name });
       }
     }
-    // Safety net: catch any deck IDs that didn't resolve via getCardById
-    for (const id of deckCardIds) {
-      if (!seen.has(id)) {
-        seen.add(id);
-        // Format the raw ID as a readable name
-        options.push({ id, name: id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+    // Also include current deck cards (in case owned list is stale)
+    for (const card of deckCards) {
+      if (!seen.has(card.id)) {
+        seen.add(card.id);
+        options.push({ id: card.id, name: card.name });
       }
     }
     return options.sort((a, b) => a.name.localeCompare(b.name));
@@ -273,7 +271,7 @@ export function AIEditor() {
       {/* Deck info footer */}
       <div className="border-t border-gray-800 px-6 py-2 flex-shrink-0">
         <p className="text-[10px] text-gray-600">
-          Deck has {deckCardIds.length} cards ({cardOptions.length} unique). Cards not in your deck won't be playable.
+          Deck: {deckCardIds.length} cards. Showing {cardOptions.length} unique cards from your collection.
         </p>
       </div>
 
